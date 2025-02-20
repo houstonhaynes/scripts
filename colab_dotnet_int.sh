@@ -30,12 +30,15 @@ if [ -z "$HOSTFXR_DIR" ]; then
     exit 1
 fi
 
-# Create /usr/share/dotnet/host/fxr directory
-sudo mkdir -p /usr/share/dotnet/host/fxr
+# Extract version number from HOSTFXR_DIR
+VERSION=$(basename "$HOSTFXR_DIR")
 
-# Copy files from the versioned directory to /usr/share/dotnet/host/fxr
-echo "Copying files from $HOSTFXR_DIR to /usr/share/dotnet/host/fxr..."
-sudo cp -r "$HOSTFXR_DIR"/* /usr/share/dotnet/host/fxr/
+# Create /usr/share/dotnet/host/fxr/$VERSION directory
+sudo mkdir -p "/usr/share/dotnet/host/fxr/$VERSION"
+
+# Copy files from the versioned directory to /usr/share/dotnet/host/fxr/$VERSION
+echo "Copying files from $HOSTFXR_DIR to /usr/share/dotnet/host/fxr/$VERSION..."
+sudo cp -r "$HOSTFXR_DIR"/* "/usr/share/dotnet/host/fxr/$VERSION/"
 
 # Verify the framework setup
 echo "Verifying .NET setup..."
