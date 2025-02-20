@@ -28,6 +28,16 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Check if /usr/share/dotnet/host/fxr exists, if not create symlinks
+if [ ! -d "/usr/share/dotnet/host/fxr" ]; then
+    echo "Creating symlinks for /usr/share/dotnet/host/fxr..."
+    ln -s /usr/share/dotnet/host/fxr /usr/share/dotnet/host/fxr
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to create symlinks for /usr/share/dotnet/host/fxr"
+        exit 1
+    fi
+fi
+
 # Add dotnet tools to PATH
 export PATH=$PATH:$HOME/.dotnet/tools
 
