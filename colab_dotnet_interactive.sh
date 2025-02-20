@@ -33,14 +33,6 @@ dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.355307
 echo "Installing Jupyter kernels..."
 dotnet interactive jupyter install
 
-# Create kernel directories
-mkdir -p /root/.local/share/jupyter/kernels/{fsharp,csharp}
-
-# Create kernel configurations
-echo "Configuring kernels..."
-echo "{\"argv\": [\"/usr/bin/dotnet-interactive\", \"jupyter\", \"--default-kernel\", \"fsharp\", \"--http-port-range\", \"1000-3000\", \"{connection_file}\"], \"display_name\": \".NET (F#)\", \"language\": \"F#\"}" > /root/.local/share/jupyter/kernels/fsharp/kernel.json
-echo "{\"argv\": [\"/usr/bin/dotnet-interactive\", \"jupyter\", \"--default-kernel\", \"csharp\", \"--http-port-range\", \"1000-3000\", \"{connection_file}\"], \"display_name\": \".NET (C#)\", \"language\": \"C#\"}" > /root/.local/share/jupyter/kernels/csharp/kernel.json
-
 # Verify installation
 echo "Verifying installation..."
 dotnet tool list -g
