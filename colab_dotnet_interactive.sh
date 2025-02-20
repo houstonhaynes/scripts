@@ -31,8 +31,8 @@ dotnet interactive jupyter install
 
 # Create kernel configurations
 echo "Creating kernel configurations..."
-mkdir -p /root/.local/share/jupyter/kernels/.net-csharp
-mkdir -p /root/.local/share/jupyter/kernels/.net-fsharp
+mkdir -p /root/.local/share/jupyter/kernels/csharp
+mkdir -p /root/.local/share/jupyter/kernels/fsharp
 echo "{\"argv\": [\"$HOME/.dotnet/tools/dotnet-interactive\", \"jupyter\", \"--default-kernel\", \"fsharp\", \"--http-port-range\", \"1000-3000\", \"{connection_file}\"], \"display_name\": \".NET (F#)\", \"language\": \"F#\"}" > /root/.local/share/jupyter/kernels/fsharp/kernel.json
 echo "{\"argv\": [\"$HOME/.dotnet/tools/dotnet-interactive\", \"jupyter\", \"--default-kernel\", \"csharp\", \"--http-port-range\", \"1000-3000\", \"{connection_file}\"], \"display_name\": \".NET (C#)\", \"language\": \"C#\"}" > /root/.local/share/jupyter/kernels/csharp/kernel.json
 
