@@ -8,17 +8,39 @@ echo "Running on Ubuntu version: $VERSION_ID"
 
 # Download and install Microsoft repository
 wget -q https://packages.microsoft.com/config/ubuntu/$VERSION_ID/packages-microsoft-prod.deb
-dpkg -i packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
 
 # Update package list and install .NET SDK packages
-apt-get update
-apt-get install -y dotnet-sdk-6.0 aspnetcore-runtime-6.0 dotnet-runtime-6.0 dotnet-hostfxr-6.0
-
+sudo apt-get update
+sudo apt-get install -y dotnet-sdk-6.0 aspnetcore-runtime-6.0 dotnet-runtime-6.0 dotnet-hostfxr-6.0
 
 # After installing .NET SDK
 if [ ! -d "/usr/share/dotnet" ]; then
     echo "Error: .NET installation failed"
     exit 1
+fi
+
+# Create /usr/share/dotnet/host if it doesn't exist
+sudo mkdir -p /usr/share/dotnet/host
+
+# Find the .NET Core App directory
+DOTNET_CORE_APP_DIR=$(find /usr/share/dotnet/shared -name "Microsoft.NETCore.App" -type d)
+
+if [ -z "$DOTNET_CORE_APP_DIR" ]; then
+    echo "Error: Microsoft.NETCore.App directory not found."
+    exit 1
+fi
+
+# Create symlink to the .NET Core App directory
+if [ ! -L "/usr/share/dotnet/host/fxr" ]; then
+    echo "Creating symlink for /usr/share/dotnet/host/fxr..."
+    sudo ln -s "$DOTNET_CORE_APP_DIR" /usr/share/dotnet/host/fxr
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to create symlink for /usr/share/dotnet/host/fxr"
+        exit 1
+    fi
+else
+    echo "Symlink /usr/share/dotnet/host/fxr already exists."
 fi
 
 # Verify the framework setup
