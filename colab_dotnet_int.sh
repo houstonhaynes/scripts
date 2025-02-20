@@ -3,7 +3,8 @@ set -e  # Exit on error
 
 echo "Installing dotnet-sdk-6.0 and dotnet interactive..."
 
-# Remove any existing Microsoft repository definitions
+# Remove any existing .NET installations and Microsoft repository definitions
+rm -rf /usr/share/dotnet
 rm -f /etc/apt/sources.list.d/microsoft-prod.list
 rm -f /etc/apt/sources.list.d/microsoft-prod.list.save
 
@@ -12,17 +13,26 @@ wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-pr
 dpkg -i packages-microsoft-prod.deb
 rm packages-microsoft-prod.deb
 
-# Update package list and install .NET SDK
+# Update package list and install dependencies
 apt-get update
 apt-get install -y apt-transport-https
+apt-get install -y dotnet-runtime-6.0
+apt-get install -y aspnetcore-runtime-6.0
 apt-get install -y dotnet-sdk-6.0
 
 # Verify .NET installation
+if [ ! -d "/usr/share/dotnet/host/fxr" ]; then
+    echo "Creating missing fxr directory..."
+    mkdir -p /usr/share/dotnet/host/fxr
+fi
+
+# Verify installation
 dotnet --version
 
 # Install dotnet interactive
+export DOTNET_ROOT=/usr/share/dotnet
+export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
 dotnet tool install -g Microsoft.dotnet-interactive
-export PATH=$PATH:$HOME/.dotnet/tools
 
 # Create directories (with parents)
 mkdir -p /root/.local/share/jupyter/kernels/.net-fsharp
