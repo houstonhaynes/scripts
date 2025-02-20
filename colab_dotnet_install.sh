@@ -69,7 +69,7 @@ cat > /root/.local/share/jupyter/kernels/.net-csharp/kernel.json << EOF
 EOF
 
 # Let dotnet interactive install its kernels
-dotnet interactive jupyter install
+dotnet interactive jupyter install --version 1.0.355307
 
 # Restart Jupyter kernel service if it exists
 if systemctl is-active --quiet jupyter; then
