@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # Adds Jupyter kernels for F# and C# to a Google Colab session
-
 echo "Installing dotnet-sdk-6.0 and dotnet interactive 1.0.355307..."
 
 # Get Ubuntu version
@@ -17,8 +16,8 @@ apt-get install -y dotnet-host dotnet-hostfxr-6.0 dotnet-runtime-6.0 aspnetcore-
 apt-get install -y dotnet-sdk-6.0
 
 # Create version directory structure and copy necessary files
-mkdir -p /usr/share/dotnet/host/fxr/6.0.36
-cp -r /usr/lib/dotnet/host/fxr/6.0.36/* /usr/share/dotnet/host/fxr/6.0.36/
+mkdir -p /usr/share/dotnet/host/fxr/6.0.428
+cp -r /usr/lib/dotnet/host/fxr/6.0.36/* /usr/share/dotnet/host/fxr/6.0.428/
 
 # Set up symlinks (only if they don't exist)
 [ ! -e /usr/share/dotnet/dotnet ] && ln -s /usr/lib/dotnet/dotnet /usr/share/dotnet/dotnet
