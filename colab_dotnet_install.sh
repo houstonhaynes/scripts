@@ -25,7 +25,7 @@ export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export NUGET_PACKAGES=/root/.nuget/packages
 
 # Install dotnet interactive (specific version)
-dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.422001
+dotnet tool install -g Microsoft.dotnet-interactive
 
 # Create jupyter kernel directories
 mkdir -p /root/.local/share/jupyter/kernels/.net-fsharp
