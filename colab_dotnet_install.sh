@@ -15,13 +15,17 @@ apt-get install -y apt-transport-https
 # Install .NET 9
 apt-get install -y dotnet-sdk-9.0
 
+# Clean up NuGet cache
+rm -rf /root/.nuget/packages
+
 # Set environment variables
 export DOTNET_ROOT=/usr/share/dotnet
 export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
+export NUGET_PACKAGES=/root/.nuget/packages
 
-# Install dotnet interactive
-dotnet tool install -g Microsoft.dotnet-interactive
+# Install dotnet interactive (specific version)
+dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.422001
 
 # Create jupyter kernel directories
 mkdir -p /root/.local/share/jupyter/kernels/.net-fsharp
