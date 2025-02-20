@@ -23,20 +23,20 @@ fi
 # Create /usr/share/dotnet/host if it doesn't exist
 sudo mkdir -p /usr/share/dotnet/host
 
-# Find the .NET Core App directory in the entire file system
-DOTNET_CORE_APP_DIR=$(find / -name "Microsoft.NETCore.App" -type d 2>/dev/null)
+# Find the correct hostfxr directory
+HOSTFXR_DIR=$(find /usr/share/dotnet/host/fxr -type d -name "[0-9]*\.[0-9]*" 2>/dev/null | head -n 1)
 
-if [ -z "$DOTNET_CORE_APP_DIR" ]; then
-    echo "Error: Microsoft.NETCore.App directory not found anywhere."
-    echo "Contents of /usr/share/dotnet:"
-    ls -l /usr/share/dotnet
+if [ -z "$HOSTFXR_DIR" ]; then
+    echo "Error: No versioned hostfxr directory found."
+    echo "Contents of /usr/share/dotnet/host/fxr:"
+    ls -l /usr/share/dotnet/host/fxr
     exit 1
 fi
 
-# Create symlink to the .NET Core App directory
+# Create symlink to the correct hostfxr directory
 if [ ! -L "/usr/share/dotnet/host/fxr" ]; then
     echo "Creating symlink for /usr/share/dotnet/host/fxr..."
-    sudo ln -s "$DOTNET_CORE_APP_DIR" /usr/share/dotnet/host/fxr
+    sudo ln -s "$HOSTFXR_DIR" /usr/share/dotnet/host/fxr
     if [ $? -ne 0 ]; then
         echo "Error: Failed to create symlink for /usr/share/dotnet/host/fxr"
         exit 1
