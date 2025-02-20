@@ -21,16 +21,6 @@ if [ ! -d "/usr/share/dotnet" ]; then
     exit 1
 fi
 
-# Check if /usr/share/dotnet/host/fxr exists, if not create symlinks
-if [ ! -d "/usr/share/dotnet/host/fxr" ]; then
-    echo "Creating symlink for /usr/share/dotnet/host/fxr..."
-    ln -s /usr/share/dotnet/shared/Microsoft.NETCore.App /usr/share/dotnet/host/fxr
-    if [ $? -ne 0 ]; then
-        echo "Error: Failed to create symlink for /usr/share/dotnet/host/fxr"
-        exit 1
-    fi
-fi
-
 # Verify the framework setup
 echo "Verifying .NET setup..."
 dotnet --list-runtimes
