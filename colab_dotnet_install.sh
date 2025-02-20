@@ -1,47 +1,21 @@
 #!/usr/bin/env bash
 set -e  # Exit on error
 
-echo "Installing dotnet-sdk-6.0 and dotnet interactive..."
+echo "Installing dotnet interactive for existing .NET installation..."
 
-# Clean up any previous installation
-rm -rf /usr/share/dotnet
-rm -rf /usr/lib/dotnet
-rm -f /etc/apt/sources.list.d/microsoft-prod.list
-rm -f /etc/apt/sources.list.d/microsoft-prod.list.save
-rm -rf /root/.local/share/jupyter/kernels/.net-*  # Clean up old kernels
+# Determine .NET version
+DOTNET_VERSION=$(dotnet --version | cut -d '.' -f 1)
 
-# Add Microsoft package repository
-wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb
-dpkg -i packages-microsoft-prod.deb
-rm packages-microsoft-prod.deb
+echo "Detected .NET version: $DOTNET_VERSION"
 
-# Update package list and install dependencies
-apt-get update
-apt-get install -y apt-transport-https
-
-# Install .NET SDK and runtime
-apt-get install -y dotnet-runtime-deps-6.0
-apt-get install -y dotnet-runtime-6.0
-apt-get install -y aspnetcore-runtime-6.0
-apt-get install -y dotnet-host
-apt-get install -y dotnet-hostfxr-6.0
-apt-get install -y dotnet-sdk-6.0
-
-# Check dotnet --info
-echo "dotnet --info:"
-dotnet --info
-
-# Create required directories
-mkdir -p /usr/share/dotnet/host/fxr/6.0.36
-mkdir -p /usr/share/dotnet/shared/Microsoft.NETCore.App/6.0.36
-mkdir -p /usr/share/dotnet/shared/Microsoft.AspNetCore.App/6.0.36
-
-# Create symlinks
-ln -sf /usr/lib/dotnet/host/fxr/6.0.36/libhostfxr.so /usr/share/dotnet/host/fxr/6.0.36/
-
-# Copy shared frameworks
-cp -r /usr/lib/dotnet/shared/Microsoft.NETCore.App/6.0.36/* /usr/share/dotnet/shared/Microsoft.NETCore.App/6.0.36/
-cp -r /usr/lib/dotnet/shared/Microsoft.AspNetCore.App/6.0.36/* /usr/share/dotnet/shared/Microsoft.AspNetCore.App/6.0.36/
+# Set .NET version-specific variables
+if [ "$DOTNET_VERSION" = "9" ]; then
+    DOTNET_RUNTIME="9.0"
+    DOTNET_VERSION_DIR="9.0"
+else
+    echo "Unsupported .NET version: $DOTNET_VERSION. Aborting."
+    exit 1
+fi
 
 # Set environment variables
 export DOTNET_ROOT=/usr/share/dotnet
@@ -49,7 +23,7 @@ export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
 # Install dotnet interactive
-dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.355307
+dotnet tool install -g Microsoft.dotnet-interactive
 
 # Create jupyter kernel directories
 mkdir -p /root/.local/share/jupyter/kernels/.net-fsharp
