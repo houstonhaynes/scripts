@@ -20,15 +20,6 @@ if [ ! -d "/usr/share/dotnet" ]; then
     exit 1
 fi
 
-# Remove existing symlink if it exists
-if [ -L "/usr/share/dotnet/host/fxr" ]; then
-    echo "Removing existing symlink /usr/share/dotnet/host/fxr..."
-    sudo rm /usr/share/dotnet/host/fxr
-fi
-
-# Create /usr/share/dotnet/host if it doesn't exist
-sudo mkdir -p /usr/share/dotnet/host
-
 # Find the correct hostfxr directory
 HOSTFXR_DIR=$(find /usr/lib/dotnet/shared/Microsoft.NETCore.App -type d -name "[0-9]*\.[0-9]*" 2>/dev/null | head -n 1)
 
@@ -39,17 +30,12 @@ if [ -z "$HOSTFXR_DIR" ]; then
     exit 1
 fi
 
-# Create symlink to the correct hostfxr directory
-if [ ! -L "/usr/share/dotnet/host/fxr" ]; then
-    echo "Creating symlink for /usr/share/dotnet/host/fxr..."
-    sudo ln -s "$HOSTFXR_DIR" /usr/share/dotnet/host/fxr
-    if [ $? -ne 0 ]; then
-        echo "Error: Failed to create symlink for /usr/share/dotnet/host/fxr"
-        exit 1
-    fi
-else
-    echo "Symlink /usr/share/dotnet/host/fxr already exists."
-fi
+# Create /usr/share/dotnet/host/fxr directory
+sudo mkdir -p /usr/share/dotnet/host/fxr
+
+# Copy files from the versioned directory to /usr/share/dotnet/host/fxr
+echo "Copying files from $HOSTFXR_DIR to /usr/share/dotnet/host/fxr..."
+sudo cp -r "$HOSTFXR_DIR"/* /usr/share/dotnet/host/fxr/
 
 # Verify the framework setup
 echo "Verifying .NET setup..."
