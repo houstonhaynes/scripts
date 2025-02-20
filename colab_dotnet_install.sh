@@ -45,7 +45,7 @@ export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
 # Install dotnet interactive
-dotnet tool install -g Microsoft.dotnet-interactive
+dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.355307
 
 # Create jupyter kernel directories
 mkdir -p /root/.local/share/jupyter/kernels/.net-fsharp
@@ -67,9 +67,6 @@ cat > /root/.local/share/jupyter/kernels/.net-csharp/kernel.json << EOF
   "language": "C#"
 }
 EOF
-
-# Let dotnet interactive install its kernels
-dotnet interactive jupyter install --version 1.0.355307
 
 # Restart Jupyter kernel service if it exists
 if systemctl is-active --quiet jupyter; then
