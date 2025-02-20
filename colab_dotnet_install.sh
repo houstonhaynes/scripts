@@ -54,7 +54,7 @@ mkdir -p /root/.local/share/jupyter/kernels/.net-csharp
 # Create kernel.json files with absolute paths
 cat > /root/.local/share/jupyter/kernels/.net-fsharp/kernel.json << EOF
 {
-  "argv": ["/root/.dotnet/tools/dotnet-interactive", "jupyter", "--kernel-name", "fsharp", "--default-kernel", "fsharp", "--http-port-range", "1000-3000", "{connection_file}"],
+  "argv": ["/root/.dotnet/tools/dotnet-interactive", "jupyter", "--kernel-name", "fsharp", "{connection_file}"],
   "display_name": ".NET (F#)",
   "language": "F#"
 }
@@ -62,7 +62,7 @@ EOF
 
 cat > /root/.local/share/jupyter/kernels/.net-csharp/kernel.json << EOF
 {
-  "argv": ["/root/.dotnet/tools/dotnet-interactive", "jupyter", "--kernel-name", "csharp", "--default-kernel", "csharp", "--http-port-range", "1000-3000", "{connection_file}"],
+  "argv": ["/root/.dotnet/tools/dotnet-interactive", "jupyter", "--kernel-name", "csharp", "{connection_file}"],
   "display_name": ".NET (C#)",
   "language": "C#"
 }
