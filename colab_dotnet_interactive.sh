@@ -8,12 +8,15 @@ echo "Running on Ubuntu version: $VERSION_ID"
 
 # Create the shared runtime directory structures
 mkdir -p /usr/share/dotnet/shared/Microsoft.NETCore.App/6.0.36
-mkdir -p /usr/share/dotnet/shared/Microsoft.AspNetCore.App/6.0.0
+mkdir -p /usr/share/dotnet/shared/Microsoft.AspNetCore.App/6.0.36
 
 # Link both runtime files where the SDK expects them
 echo "Linking runtime files..."
 ln -sf /usr/lib/dotnet/shared/Microsoft.NETCore.App/6.0.36/* /usr/share/dotnet/shared/Microsoft.NETCore.App/6.0.36/
-ln -sf /usr/lib/dotnet/shared/Microsoft.AspNetCore.App/6.0.36/* /usr/share/dotnet/shared/Microsoft.AspNetCore.App/6.0.0/
+ln -sf /usr/lib/dotnet/shared/Microsoft.AspNetCore.App/6.0.36/* /usr/share/dotnet/shared/Microsoft.AspNetCore.App/6.0.36/
+
+# Create a symlink from 6.0.36 to 6.0.0 for AspNetCore
+ln -sf /usr/share/dotnet/shared/Microsoft.AspNetCore.App/6.0.36 /usr/share/dotnet/shared/Microsoft.AspNetCore.App/6.0.0
 
 # Verify the framework is properly linked
 echo "Verifying .NET setup..."
@@ -22,7 +25,7 @@ dotnet --list-runtimes
 # Add dotnet tools to PATH
 export PATH=$PATH:$HOME/.dotnet/tools
 
-# Install dotnet interactive
+# Install dotnet interactive if not already installed
 echo "Installing dotnet interactive..."
 dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.355307
 
