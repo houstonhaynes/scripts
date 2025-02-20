@@ -6,12 +6,14 @@ echo "Setting up .NET environment and installing dotnet interactive 1.0.355307..
 source /etc/os-release
 echo "Running on Ubuntu version: $VERSION_ID"
 
-# Create the shared runtime directory structure
+# Create the shared runtime directory structures
 mkdir -p /usr/share/dotnet/shared/Microsoft.NETCore.App/6.0.36
+mkdir -p /usr/share/dotnet/shared/Microsoft.AspNetCore.App/6.0.0
 
-# Link the runtime files where the SDK expects them
+# Link both runtime files where the SDK expects them
 echo "Linking runtime files..."
 ln -sf /usr/lib/dotnet/shared/Microsoft.NETCore.App/6.0.36/* /usr/share/dotnet/shared/Microsoft.NETCore.App/6.0.36/
+ln -sf /usr/lib/dotnet/shared/Microsoft.AspNetCore.App/6.0.36/* /usr/share/dotnet/shared/Microsoft.AspNetCore.App/6.0.0/
 
 # Verify the framework is properly linked
 echo "Verifying .NET setup..."
@@ -42,4 +44,7 @@ dotnet tool list -g
 jupyter kernelspec list
 
 echo "Done."
-echo "Select \"Runtime\" -> \"Change Runtime Type\" and click \"Save\" to activate for this notebook"
+echo "After running this script:"
+echo "1. Select \"Runtime\" -> \"Change Runtime Type\""
+echo "2. Choose \".NET (C#)\" or \".NET (F#)\" from the dropdown"
+echo "3. Click \"Save\""
