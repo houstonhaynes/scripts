@@ -3,7 +3,7 @@
 # Atilim Gunes Baydin (gunes@robots.ox.ac.uk), February 2022
 # Houston Haynes (h3@ad4s.co), February 2025
 
-echo "Installing dotnet-sdk-6.0.136 and dotnet interactive 1.0.355307..."
+echo "Install dotnet-sdk-6.0.136 and dotnet interactive 1.0.355307..."
 
 # Get Ubuntu version
 source /etc/os-release
