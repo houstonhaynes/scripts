@@ -14,6 +14,12 @@ dpkg -i packages-microsoft-prod.deb
 apt-get update
 apt-get install -y dotnet-sdk-6.0 aspnetcore-runtime-6.0 dotnet-runtime-6.0
 
+# After installing .NET SDK
+if [ ! -d "/usr/share/dotnet" ]; then
+    echo "Error: .NET installation failed"
+    exit 1
+fi
+
 # Verify the framework setup
 echo "Verifying .NET setup..."
 dotnet --list-runtimes
@@ -31,15 +37,25 @@ dotnet interactive jupyter install
 
 # Create kernel configurations
 echo "Creating kernel configurations..."
-mkdir -p /root/.local/share/jupyter/kernels/csharp
-mkdir -p /root/.local/share/jupyter/kernels/fsharp
-echo "{\"argv\": [\"$HOME/.dotnet/tools/dotnet-interactive\", \"jupyter\", \"--default-kernel\", \"fsharp\", \"--http-port-range\", \"1000-3000\", \"{connection_file}\"], \"display_name\": \".NET (F#)\", \"language\": \"F#\"}" > /root/.local/share/jupyter/kernels/fsharp/kernel.json
-echo "{\"argv\": [\"$HOME/.dotnet/tools/dotnet-interactive\", \"jupyter\", \"--default-kernel\", \"csharp\", \"--http-port-range\", \"1000-3000\", \"{connection_file}\"], \"display_name\": \".NET (C#)\", \"language\": \"C#\"}" > /root/.local/share/jupyter/kernels/csharp/kernel.json
+mkdir -p /root/.local/share/jupyter/kernels/.net-csharp
+mkdir -p /root/.local/share/jupyter/kernels/.net-fsharp
 
-# Update kernel.json with full path
-echo "Updating kernel configurations..."
-sed -i 's/"dotnet"/"\/usr\/bin\/dotnet"/g' /root/.local/share/jupyter/kernels/.net-csharp/kernel.json
-sed -i 's/"dotnet"/"\/usr\/bin\/dotnet"/g' /root/.local/share/jupyter/kernels/.net-fsharp/kernel.json
+# Create kernel.json files
+cat > /root/.local/share/jupyter/kernels/.net-fsharp/kernel.json << EOF
+{
+  "argv": ["/usr/bin/dotnet", "interactive", "jupyter", "--kernel-name", "fsharp", "--http-port-range", "1000-3000", "{connection_file}"],
+  "display_name": ".NET (F#)",
+  "language": "F#"
+}
+EOF
+
+cat > /root/.local/share/jupyter/kernels/.net-csharp/kernel.json << EOF
+{
+  "argv": ["/usr/bin/dotnet", "interactive", "jupyter", "--kernel-name", "csharp", "--http-port-range", "1000-3000", "{connection_file}"],
+  "display_name": ".NET (C#)",
+  "language": "C#"
+}
+EOF
 
 # Verify installation
 echo "Verifying installation..."
