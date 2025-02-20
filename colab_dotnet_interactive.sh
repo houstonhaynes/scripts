@@ -14,29 +14,12 @@ dpkg -i packages-microsoft-prod.deb
 apt-get update
 apt-get install -y dotnet-sdk-6.0 aspnetcore-runtime-6.0 dotnet-runtime-6.0
 
-# Create complete directory structure
-mkdir -p /usr/share/dotnet/host/fxr/6.0.36
-mkdir -p /usr/share/dotnet/shared/Microsoft.NETCore.App
-mkdir -p /usr/share/dotnet/shared/Microsoft.AspNetCore.App
-
-# Link the complete directory structure
-echo "Linking runtime files..."
-# Link the main dotnet executable
-ln -sf /usr/bin/dotnet /usr/share/dotnet/dotnet
-
-# Link the host/fxr structure
-cp -f /usr/lib/dotnet/host/fxr/6.0.36/libhostfxr.so /usr/share/dotnet/host/fxr/6.0.36/
-
-# Link the shared runtime directories
-cp -rf /usr/lib/dotnet/shared/Microsoft.NETCore.App/6.0.36 /usr/share/dotnet/shared/Microsoft.NETCore.App/
-cp -rf /usr/lib/dotnet/shared/Microsoft.AspNetCore.App/6.0.36 /usr/share/dotnet/shared/Microsoft.AspNetCore.App/
+# Verify the framework setup
+echo "Verifying .NET setup..."
+dotnet --list-runtimes
 
 # Add dotnet tools to PATH
 export PATH=$PATH:$HOME/.dotnet/tools
-
-# Verify the framework is properly linked
-echo "Verifying .NET setup..."
-dotnet --list-runtimes
 
 # Install dotnet interactive
 echo "Installing dotnet interactive..."
@@ -45,6 +28,11 @@ dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.355307
 # Install Jupyter kernels
 echo "Installing Jupyter kernels..."
 dotnet interactive jupyter install
+
+# Update kernel.json with full path
+echo "Updating kernel configurations..."
+sed -i 's/"dotnet"/"\/usr\/bin\/dotnet"/g' /root/.local/share/jupyter/kernels/.net-csharp/kernel.json
+sed -i 's/"dotnet"/"\/usr\/bin\/dotnet"/g' /root/.local/share/jupyter/kernels/.net-fsharp/kernel.json
 
 # Verify installation
 echo "Verifying installation..."
