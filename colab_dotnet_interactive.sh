@@ -2,13 +2,13 @@
 # Adds Jupyter kernels for F# and C# to a Google Colab session
 echo "Installing dotnet interactive 1.0.355307..."
 
-# First ensure all the symlinks point to the right places
-rm -f /usr/share/dotnet/host/fxr/6.0.428/libhostfxr.so
-mkdir -p /usr/share/dotnet/host/fxr/6.0.428
+# Create base directories
+mkdir -p /usr/share/dotnet/shared/Microsoft.NETCore.App/6.0.36
 
-# Create proper symlinks to the actual files
-ln -s /usr/lib/dotnet/host/fxr/6.0.36/libhostfxr.so /usr/share/dotnet/host/fxr/6.0.428/libhostfxr.so
-ln -s /usr/bin/dotnet /usr/share/dotnet/dotnet
+# Link the entire dotnet directory structure
+ln -sf /usr/lib/dotnet/host /usr/share/dotnet/
+ln -sf /usr/lib/dotnet/shared/Microsoft.NETCore.App/6.0.36/* /usr/share/dotnet/shared/Microsoft.NETCore.App/6.0.36/
+ln -sf /usr/lib/dotnet/sdk /usr/share/dotnet/
 
 # Add dotnet tools to PATH
 export PATH=$PATH:$HOME/.dotnet/tools
