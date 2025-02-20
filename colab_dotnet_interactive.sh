@@ -1,14 +1,9 @@
 #!/usr/bin/env bash
-# Adds Jupyter kernels for F# and C# to a Google Colab session
 echo "Installing dotnet interactive 1.0.355307..."
 
-# Create base directories
+# Create shared runtime path and link runtime files
 mkdir -p /usr/share/dotnet/shared/Microsoft.NETCore.App/6.0.36
-
-# Link the entire dotnet directory structure
-ln -sf /usr/lib/dotnet/host /usr/share/dotnet/
 ln -sf /usr/lib/dotnet/shared/Microsoft.NETCore.App/6.0.36/* /usr/share/dotnet/shared/Microsoft.NETCore.App/6.0.36/
-ln -sf /usr/lib/dotnet/sdk /usr/share/dotnet/
 
 # Add dotnet tools to PATH
 export PATH=$PATH:$HOME/.dotnet/tools
