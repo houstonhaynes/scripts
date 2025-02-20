@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
 # Adds Jupyter kernels for F# and C# to a Google Colab session
-echo "Setting up .NET environment and installing dotnet interactive 1.0.355307..."
+echo "Installing .NET SDK and dotnet interactive 1.0.355307..."
 
 # Get Ubuntu version
 source /etc/os-release
 echo "Running on Ubuntu version: $VERSION_ID"
+
+# Download and install Microsoft repository
+wget -q https://packages.microsoft.com/config/ubuntu/$VERSION_ID/packages-microsoft-prod.deb
+dpkg -i packages-microsoft-prod.deb
+
+# Update package list and install .NET SDK packages
+apt-get update
+apt-get install -y dotnet-sdk-6.0 aspnetcore-runtime-6.0 dotnet-runtime-6.0
 
 # Create the shared runtime directory structures
 mkdir -p /usr/share/dotnet/shared/Microsoft.NETCore.App/6.0.36
@@ -25,7 +33,7 @@ dotnet --list-runtimes
 # Add dotnet tools to PATH
 export PATH=$PATH:$HOME/.dotnet/tools
 
-# Install dotnet interactive if not already installed
+# Install dotnet interactive
 echo "Installing dotnet interactive..."
 dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.355307
 
