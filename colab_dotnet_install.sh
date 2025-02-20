@@ -73,7 +73,17 @@ dotnet interactive jupyter install
 
 # Restart Jupyter kernel service if it exists
 if systemctl is-active --quiet jupyter; then
+    echo "Restarting Jupyter kernel service..."
     systemctl restart jupyter
 fi
 
-echo "Installation completed. Now you can use .NET in Jupyter notebooks!"
+# Verify installation
+echo "Verifying installation..."
+dotnet tool list -g
+jupyter kernelspec list
+
+echo "Done."
+echo "After running this script:"
+echo "1. Select \"Runtime\" -> \"Change Runtime Type\""
+echo "2. Choose \".NET (C#)\" or \".NET (F#)\" from the dropdown"
+echo "3. Click \"Save\""
