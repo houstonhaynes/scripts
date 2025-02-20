@@ -51,7 +51,7 @@ dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.355307
 mkdir -p /root/.local/share/jupyter/kernels/.net-fsharp
 mkdir -p /root/.local/share/jupyter/kernels/.net-csharp
 
-# Create kernel.json files with absolute paths
+# Create kernel.json files with explicit kernel names
 cat > /root/.local/share/jupyter/kernels/.net-fsharp/kernel.json << EOF
 {
   "argv": ["/root/.dotnet/tools/dotnet-interactive", "jupyter", "--kernel-name", "fsharp", "{connection_file}"],
@@ -68,10 +68,15 @@ cat > /root/.local/share/jupyter/kernels/.net-csharp/kernel.json << EOF
 }
 EOF
 
+# Update Jupyter kernelspecs
+jupyter kernelspec list
 # Restart Jupyter kernel service if it exists
 if systemctl is-active --quiet jupyter; then
     echo "Restarting Jupyter kernel service..."
     systemctl restart jupyter
+else
+    echo "Jupyter service not found, attempting to start it..."
+    jupyter notebook --allow-root &
 fi
 
 # Verify installation
