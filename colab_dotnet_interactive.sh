@@ -14,14 +14,6 @@ dpkg -i packages-microsoft-prod.deb
 apt-get update
 apt-get install -y dotnet-sdk-6.0 aspnetcore-runtime-6.0 dotnet-runtime-6.0
 
-# First ensure all the symlinks point to the right places
-rm -f /usr/share/dotnet/host/fxr/6.0.428/libhostfxr.so
-mkdir -p /usr/share/dotnet/host/fxr/6.0.428
-
-# Create proper symlinks to the actual files
-ln -s /usr/lib/dotnet/host/fxr/6.0.36/libhostfxr.so /usr/share/dotnet/host/fxr/6.0.428/libhostfxr.so
-ln -s /usr/bin/dotnet /usr/share/dotnet/dotnet
-
 # Verify the framework setup
 echo "Verifying .NET setup..."
 dotnet --list-runtimes
