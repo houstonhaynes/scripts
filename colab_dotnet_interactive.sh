@@ -14,14 +14,22 @@ dpkg -i packages-microsoft-prod.deb
 apt-get update
 apt-get install -y dotnet-sdk-6.0 aspnetcore-runtime-6.0 dotnet-runtime-6.0
 
-# Create directory structure that matches the SDK expectations
+# Create complete directory structure
 mkdir -p /usr/share/dotnet/host/fxr/6.0.36
+mkdir -p /usr/share/dotnet/shared/Microsoft.NETCore.App
+mkdir -p /usr/share/dotnet/shared/Microsoft.AspNetCore.App
 
-# Link the runtime files and directories
+# Link the complete directory structure
 echo "Linking runtime files..."
-ln -sf /usr/lib/dotnet/host/fxr/6.0.36/* /usr/share/dotnet/host/fxr/6.0.36/
-ln -sf /usr/lib/dotnet/shared /usr/share/dotnet/
-ln -sf /usr/lib/dotnet/dotnet /usr/share/dotnet/dotnet
+# Link the main dotnet executable
+ln -sf /usr/bin/dotnet /usr/share/dotnet/dotnet
+
+# Link the host/fxr structure
+cp -f /usr/lib/dotnet/host/fxr/6.0.36/libhostfxr.so /usr/share/dotnet/host/fxr/6.0.36/
+
+# Link the shared runtime directories
+cp -rf /usr/lib/dotnet/shared/Microsoft.NETCore.App/6.0.36 /usr/share/dotnet/shared/Microsoft.NETCore.App/
+cp -rf /usr/lib/dotnet/shared/Microsoft.AspNetCore.App/6.0.36 /usr/share/dotnet/shared/Microsoft.AspNetCore.App/
 
 # Add dotnet tools to PATH
 export PATH=$PATH:$HOME/.dotnet/tools
