@@ -5,9 +5,6 @@
 
 echo "Installing dotnet-sdk-6.0 and dotnet interactive 1.0.355307..."
 
-# Remove any existing Microsoft repository configuration
-rm -f packages-microsoft-prod.deb
-
 # Get Ubuntu version
 source /etc/os-release
 echo "Running on Ubuntu version: $VERSION_ID"
@@ -16,18 +13,17 @@ echo "Running on Ubuntu version: $VERSION_ID"
 wget -q https://packages.microsoft.com/config/ubuntu/$VERSION_ID/packages-microsoft-prod.deb
 dpkg -i packages-microsoft-prod.deb
 
-# Create necessary directories
-mkdir -p /root/.local/share/jupyter/kernels/fsharp
-mkdir -p /root/.local/share/jupyter/kernels/csharp
+# Update and install .NET SDK
+apt-get update
+apt-get install -y dotnet-host dotnet-hostfxr-6.0 dotnet-runtime-6.0 aspnetcore-runtime-6.0
+apt-get install -y dotnet-sdk-6.0
 
-# Create required directories
-sudo mkdir -p /usr/share/dotnet/host/fxr
-sudo mkdir -p /usr/share/dotnet/sdk
-sudo mkdir -p /usr/share/dotnet/shared
+# Create version directory structure
+mkdir -p /usr/share/dotnet/host/fxr/6.0.428
 
-# Reinstall the SDK to ensure proper setup
-sudo apt-get remove -y dotnet-sdk-6.0
-sudo apt-get install -y dotnet-sdk-6.0
+# Set up symlinks
+ln -s /usr/lib/dotnet/dotnet /usr/share/dotnet/dotnet
+ln -s /usr/lib/dotnet/host/fxr/6.0.428 /usr/share/dotnet/host/fxr/6.0.428
 
 # Install dotnet interactive
 dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.355307
@@ -35,10 +31,6 @@ dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.355307
 # Add dotnet tools to PATH
 export PATH=$PATH:$HOME/.dotnet/tools
 dotnet interactive jupyter install
-
-# Create kernel configurations
-echo "{\"argv\": [\"$HOME/.dotnet/tools/dotnet-interactive\", \"jupyter\", \"--default-kernel\", \"fsharp\", \"--http-port-range\", \"1000-3000\", \"{connection_file}\"], \"display_name\": \".NET (F#)\", \"language\": \"F#\"}" > /root/.local/share/jupyter/kernels/fsharp/kernel.json
-echo "{\"argv\": [\"$HOME/.dotnet/tools/dotnet-interactive\", \"jupyter\", \"--default-kernel\", \"csharp\", \"--http-port-range\", \"1000-3000\", \"{connection_file}\"], \"display_name\": \".NET (C#)\", \"language\": \"C#\"}" > /root/.local/share/jupyter/kernels/csharp/kernel.json
 
 echo "Done."
 echo "Select \"Runtime\" -> \"Change Runtime Type\" and click \"Save\" to activate for this notebook"
