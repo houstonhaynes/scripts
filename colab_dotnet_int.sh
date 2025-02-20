@@ -3,22 +3,33 @@ set -e  # Exit on error
 
 echo "Installing dotnet-sdk-6.0 and dotnet interactive..."
 
-# Install .NET SDK
-wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb
-dpkg -i packages-microsoft-prod.deb > /dev/null
-apt-get update > /dev/null
-apt-get install -y dotnet-sdk-6.0 > /dev/null
+# Remove any existing Microsoft repository definitions
+rm -f /etc/apt/sources.list.d/microsoft-prod.list
+rm -f /etc/apt/sources.list.d/microsoft-prod.list.save
+
+# Add Microsoft package repository
+wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb
+dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+
+# Update package list and install .NET SDK
+apt-get update
+apt-get install -y apt-transport-https
+apt-get install -y dotnet-sdk-6.0
+
+# Verify .NET installation
+dotnet --version
 
 # Install dotnet interactive
-dotnet tool install -g Microsoft.dotnet-interactive > /dev/null
+dotnet tool install -g Microsoft.dotnet-interactive
 export PATH=$PATH:$HOME/.dotnet/tools
 
-# Install jupyter integration
-dotnet interactive jupyter install > /dev/null
-
-# Create kernel directories
+# Create directories (with parents)
 mkdir -p /root/.local/share/jupyter/kernels/.net-fsharp
 mkdir -p /root/.local/share/jupyter/kernels/.net-csharp
+
+# Install jupyter integration
+dotnet interactive jupyter install
 
 # Create kernel.json files
 cat > /root/.local/share/jupyter/kernels/.net-fsharp/kernel.json << EOF
@@ -37,11 +48,4 @@ cat > /root/.local/share/jupyter/kernels/.net-csharp/kernel.json << EOF
 }
 EOF
 
-# Verify installation
-if command -v dotnet &> /dev/null && [ -f "$HOME/.dotnet/tools/dotnet-interactive" ]; then
-    echo "Installation completed successfully."
-    echo "Select \"Runtime\" -> \"Change Runtime Type\" and click \"Save\" to activate for this notebook"
-else
-    echo "Installation failed. Please check the error messages above."
-    exit 1
-fi
+echo "Installation completed. Please verify the kernels are available in Jupyter."
