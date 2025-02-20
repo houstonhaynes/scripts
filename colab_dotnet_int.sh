@@ -35,13 +35,22 @@ fi
 # Add dotnet tools to PATH
 export PATH=$PATH:$HOME/.dotnet/tools
 
+# Download dotnet interactive binaries
+echo "Downloading dotnet interactive binaries..."
+DOTNET_INTERACTIVE_VERSION="1.0.375801"
+DOTNET_INTERACTIVE_URL="https://github.com/dotnet/interactive/releases/download/v$DOTNET_INTERACTIVE_VERSION/dotnet-interactive-$DOTNET_INTERACTIVE_VERSION.linux-x64.tar.gz"
+wget -q "$DOTNET_INTERACTIVE_URL"
+
+# Extract dotnet interactive binaries
+echo "Extracting dotnet interactive binaries..."
+tar -xzf "dotnet-interactive-$DOTNET_INTERACTIVE_VERSION.linux-x64.tar.gz"
+
 # Install dotnet interactive
 echo "Installing dotnet interactive..."
-dotnet tool install -g Microsoft.dotnet-interactive
-if [ $? -ne 0 ]; then
-    echo "Error: dotnet interactive installation failed"
-    exit 1
-fi
+sudo mv "dotnet-interactive-$DOTNET_INTERACTIVE_VERSION.linux-x64" /opt/dotnet-interactive
+
+# Add dotnet interactive to PATH
+export PATH=$PATH:/opt/dotnet-interactive
 
 # Install Jupyter kernels
 echo "Installing Jupyter kernels..."
