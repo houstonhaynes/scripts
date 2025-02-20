@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Adds Jupyter kernels for F# and C# to a Google Colab session
-echo "Installing .NET SDK and dotnet interactive 1.0.355307..."
+echo "Installing .NET 9 SDK and dotnet interactive..."
 
 # Get Ubuntu version
 source /etc/os-release
@@ -12,33 +12,13 @@ sudo dpkg -i packages-microsoft-prod.deb
 
 # Update package list and install .NET SDK packages
 sudo apt-get update
-sudo apt-get install -y dotnet-sdk-6.0 aspnetcore-runtime-6.0 dotnet-runtime-6.0 dotnet-hostfxr-6.0
+sudo apt-get install -y dotnet-sdk-9.0 aspnetcore-runtime-9.0 dotnet-runtime-9.0
 
 # After installing .NET SDK
 if [ ! -d "/usr/share/dotnet" ]; then
     echo "Error: .NET installation failed"
     exit 1
 fi
-
-# Find the correct hostfxr directory
-HOSTFXR_DIR=$(find /usr/lib/dotnet/shared/Microsoft.NETCore.App -type d -name "[0-9]*\.[0-9]*" 2>/dev/null | head -n 1)
-
-if [ -z "$HOSTFXR_DIR" ]; then
-    echo "Error: No versioned hostfxr directory found."
-    echo "Contents of /usr/lib/dotnet/shared/Microsoft.NETCore.App:"
-    ls -l /usr/lib/dotnet/shared/Microsoft.NETCore.App
-    exit 1
-fi
-
-# Extract version number from HOSTFXR_DIR
-VERSION=$(basename "$HOSTFXR_DIR")
-
-# Create /usr/share/dotnet/host/fxr/$VERSION directory
-sudo mkdir -p "/usr/share/dotnet/host/fxr/$VERSION"
-
-# Copy files from the versioned directory to /usr/share/dotnet/host/fxr/$VERSION
-echo "Copying files from $HOSTFXR_DIR to /usr/share/dotnet/host/fxr/$VERSION..."
-sudo cp -r "$HOSTFXR_DIR"/* "/usr/share/dotnet/host/fxr/$VERSION/"
 
 # Verify the framework setup
 echo "Verifying .NET setup..."
@@ -53,7 +33,7 @@ export PATH=$PATH:$HOME/.dotnet/tools
 
 # Install dotnet interactive
 echo "Installing dotnet interactive..."
-dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.355307
+dotnet tool install -g Microsoft.dotnet-interactive
 if [ $? -ne 0 ]; then
     echo "Error: dotnet interactive installation failed"
     exit 1
