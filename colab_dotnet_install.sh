@@ -70,14 +70,6 @@ EOF
 
 # Update Jupyter kernelspecs
 jupyter kernelspec list
-# Restart Jupyter kernel service if it exists
-if systemctl is-active --quiet jupyter; then
-    echo "Restarting Jupyter kernel service..."
-    systemctl restart jupyter
-else
-    echo "Jupyter service not found, attempting to start it..."
-    jupyter notebook --allow-root &
-fi
 
 # Verify installation
 echo "Verifying installation..."
