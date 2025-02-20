@@ -30,10 +30,10 @@ fi
 
 # Check if /usr/share/dotnet/host/fxr exists, if not create symlinks
 if [ ! -d "/usr/share/dotnet/host/fxr" ]; then
-    echo "Creating symlinks for /usr/share/dotnet/host/fxr..."
-    ln -s /usr/share/dotnet/host/fxr /usr/share/dotnet/host/fxr
+    echo "Creating symlink for /usr/share/dotnet/host/fxr..."
+    ln -s /usr/share/dotnet/shared/Microsoft.NETCore.App /usr/share/dotnet/host/fxr
     if [ $? -ne 0 ]; then
-        echo "Error: Failed to create symlinks for /usr/share/dotnet/host/fxr"
+        echo "Error: Failed to create symlink for /usr/share/dotnet/host/fxr"
         exit 1
     fi
 fi
