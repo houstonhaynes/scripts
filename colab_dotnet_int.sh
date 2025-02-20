@@ -17,26 +17,30 @@ rm packages-microsoft-prod.deb
 apt-get update
 apt-get install -y apt-transport-https
 
-# Create required directories
-mkdir -p /usr/share/dotnet
-mkdir -p /usr/share/dotnet/host/fxr
-chmod 755 /usr/share/dotnet
-chmod 755 /usr/share/dotnet/host
-chmod 755 /usr/share/dotnet/host/fxr
-
-# Install .NET SDK and runtime
+# First install the runtime and host
 apt-get install -y dotnet-runtime-6.0
 apt-get install -y aspnetcore-runtime-6.0
+apt-get install -y dotnet-host
+apt-get install -y dotnet-hostfxr-6.0
+
+# Create the version directory (6.0.0) in fxr if it doesn't exist
+mkdir -p /usr/share/dotnet/host/fxr/6.0.0
+
+# Now install the SDK
 apt-get install -y dotnet-sdk-6.0
 
 # Set environment variables
 export DOTNET_ROOT=/usr/share/dotnet
 export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
-export DOTNET_CLI_TELEMETRY_OPTOUT=1  # Opt out of telemetry
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+
+# Wait a moment for installation to complete
+sleep 5
 
 # Verify installation
 dotnet --version || {
     echo "Failed to verify dotnet installation"
+    ls -la /usr/share/dotnet/host/fxr/  # Debug output
     exit 1
 }
 
