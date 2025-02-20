@@ -27,6 +27,10 @@ apt-get install -y dotnet-host
 apt-get install -y dotnet-hostfxr-6.0
 apt-get install -y dotnet-sdk-6.0
 
+# Check dotnet --info
+echo "dotnet --info:"
+dotnet --info
+
 # Create required directories
 mkdir -p /usr/share/dotnet/host/fxr/6.0.36
 mkdir -p /usr/share/dotnet/shared/Microsoft.NETCore.App/6.0.36
