@@ -1,36 +1,19 @@
 #!/usr/bin/env bash
 set -e  # Exit on error
 
-echo "Installing dotnet interactive for existing .NET installation..."
+echo "Installing .NET 9 and dotnet interactive..."
 
-# Try to locate dotnet executable
-if command -v dotnet >/dev/null 2>&1; then
-  echo "dotnet command found in PATH"
-else
-  echo "dotnet command not found in PATH, attempting to locate..."
-  DOTNET_PATH=$(find /usr/share/dotnet -name dotnet 2>/dev/null)
-  if [ -n "$DOTNET_PATH" ]; then
-    export PATH="$PATH:$(dirname "$DOTNET_PATH")"
-    echo "dotnet command found at $(dirname "$DOTNET_PATH") and added to PATH"
-  else
-    echo "dotnet command not found. Aborting."
-    exit 1
-  fi
-fi
+# Add Microsoft package repository
+wget -q https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb
+dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
 
-# Determine .NET version
-DOTNET_VERSION=$(dotnet --version | cut -d '.' -f 1)
+# Update package list and install dependencies
+apt-get update
+apt-get install -y apt-transport-https
 
-echo "Detected .NET version: $DOTNET_VERSION"
-
-# Set .NET version-specific variables
-if [ "$DOTNET_VERSION" = "9" ]; then
-    DOTNET_RUNTIME="9.0"
-    DOTNET_VERSION_DIR="9.0"
-else
-    echo "Unsupported .NET version: $DOTNET_VERSION. Aborting."
-    exit 1
-fi
+# Install .NET 9
+apt-get install -y dotnet-sdk-9.0
 
 # Set environment variables
 export DOTNET_ROOT=/usr/share/dotnet
