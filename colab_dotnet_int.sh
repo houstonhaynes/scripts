@@ -37,7 +37,7 @@ export PATH=$PATH:$HOME/.dotnet/tools
 
 # Install dotnet interactive
 echo "Installing dotnet interactive..."
-dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.375801
+dotnet tool install -g Microsoft.dotnet-interactive
 if [ $? -ne 0 ]; then
     echo "Error: dotnet interactive installation failed"
     exit 1
