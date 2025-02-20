@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Adds Jupyter kernels for F# and C# to a Google Colab session
+
 echo "Installing dotnet-runtime-6.0.136 and dotnet interactive 1.0.355307..."
 
 # Get Ubuntu version
