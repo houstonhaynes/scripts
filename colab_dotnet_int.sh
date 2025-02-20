@@ -1,94 +1,15 @@
 #!/usr/bin/env bash
 # Adds Jupyter kernels for F# and C# to a Google Colab session
-echo "Installing .NET 9 SDK and dotnet interactive..."
-
-# Get Ubuntu version
-source /etc/os-release
-echo "Running on Ubuntu version: $VERSION_ID"
-
-# Remove any existing .NET installations
-echo "Removing any existing .NET installations..."
-sudo apt-get remove -y dotnet* aspnetcore* netstandard-targeting-pack*
-
-# Download and install Microsoft repository
-wget -q https://packages.microsoft.com/config/ubuntu/$VERSION_ID/packages-microsoft-prod.deb
-sudo dpkg -i packages-microsoft-prod.deb
-
-# Update package list and install .NET SDK packages
-sudo apt-get update
-sudo apt-get install -y dotnet-sdk-9.0 aspnetcore-runtime-9.0 dotnet-runtime-9.0
-
-# After installing .NET SDK
-if [ ! -d "/usr/share/dotnet" ]; then
-    echo "Error: .NET installation failed"
-    exit 1
-fi
-
-# Verify the framework setup
-echo "Verifying .NET setup..."
-dotnet --list-runtimes
-if [ $? -ne 0 ]; then
-    echo "Error: .NET setup verification failed"
-    exit 1
-fi
-
-# Add dotnet tools to PATH
+# Atilim Gunes Baydin (gunes@robots.ox.ac.uk), February 2022
+echo "Installing dotnet-sdk-6.0 and dotnet interactive..."
+wget -q https://packages.microsoft.com/config/ubuntu/18.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+dpkg -i packages-microsoft-prod.deb > /dev/null
+apt-get update > /dev/null
+apt-get install dotnet-sdk-6.0 > /dev/null
+dotnet tool install -g Microsoft.dotnet-interactive > /dev/null
 export PATH=$PATH:$HOME/.dotnet/tools
-
-# Download dotnet interactive binaries
-echo "Downloading dotnet interactive binaries..."
-DOTNET_INTERACTIVE_VERSION="1.0.375801"
-DOTNET_INTERACTIVE_URL="https://github.com/dotnet/interactive/releases/download/v$DOTNET_INTERACTIVE_VERSION/dotnet-interactive-$DOTNET_INTERACTIVE_VERSION.linux-x64.tar.gz"
-wget -q "$DOTNET_INTERACTIVE_URL"
-
-# Extract dotnet interactive binaries
-echo "Extracting dotnet interactive binaries..."
-tar -xzf "dotnet-interactive-$DOTNET_INTERACTIVE_VERSION.linux-x64.tar.gz"
-
-# Install dotnet interactive
-echo "Installing dotnet interactive..."
-sudo mv "dotnet-interactive-$DOTNET_INTERACTIVE_VERSION.linux-x64" /opt/dotnet-interactive
-
-# Add dotnet interactive to PATH
-export PATH=$PATH:/opt/dotnet-interactive
-
-# Install Jupyter kernels
-echo "Installing Jupyter kernels..."
-dotnet interactive jupyter install
-if [ $? -ne 0 ]; then
-    echo "Error: Jupyter kernels installation failed"
-    exit 1
-fi
-
-# Create kernel configurations
-echo "Creating kernel configurations..."
-mkdir -p /root/.local/share/jupyter/kernels/.net-csharp
-mkdir -p /root/.local/share/jupyter/kernels/.net-fsharp
-
-# Create kernel.json files
-cat > /root/.local/share/jupyter/kernels/.net-fsharp/kernel.json << EOF
-{
-  "argv": ["/usr/bin/dotnet", "interactive", "jupyter", "--kernel-name", "fsharp", "--http-port-range", "1000-3000", "{connection_file}"],
-  "display_name": ".NET (F#)",
-  "language": "F#"
-}
-EOF
-
-cat > /root/.local/share/jupyter/kernels/.net-csharp/kernel.json << EOF
-{
-  "argv": ["/usr/bin/dotnet", "interactive", "jupyter", "--kernel-name", "csharp", "--http-port-range", "1000-3000", "{connection_file}"],
-  "display_name": ".NET (C#)",
-  "language": "C#"
-}
-EOF
-
-# Verify installation
-echo "Verifying installation..."
-dotnet tool list -g
-jupyter kernelspec list
-
+dotnet interactive jupyter install > /dev/null
+echo "{\"argv\": [\"$HOME/.dotnet/tools/dotnet-interactive\", \"jupyter\", \"--default-kernel\", \"fsharp\", \"--http-port-range\", \"1000-3000\", \"{connection_file}\"], \"display_name\": \".NET (F#)\", \"language\": \"F#\"}" > /root/.local/share/jupyter/kernels/.net-fsharp/kernel.json
+echo "{\"argv\": [\"$HOME/.dotnet/tools/dotnet-interactive\", \"jupyter\", \"--default-kernel\", \"csharp\", \"--http-port-range\", \"1000-3000\", \"{connection_file}\"], \"display_name\": \".NET (C#)\", \"language\": \"C#\"}" > /root/.local/share/jupyter/kernels/.net-csharp/kernel.json
 echo "Done."
-echo "After running this script:"
-echo "1. Select \"Runtime\" -> \"Change Runtime Type\""
-echo "2. Choose \".NET (C#)\" or \".NET (F#)\" from the dropdown"
-echo "3. Click \"Save\""
+echo "Select \"Runtime\" -> \"Change Runtime Type\" and click \"Save\" to activate for this notebook"
