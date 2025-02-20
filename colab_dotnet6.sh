@@ -3,7 +3,7 @@
 # Atilim Gunes Baydin (gunes@robots.ox.ac.uk), February 2022
 # Houston Haynes (h3@ad4s.co), February 2025
 
-echo "Installing dotnet-sdk-6.0 and pinned dotnet interactive..."
+echo "Installing dotnet-sdk-6.0 and dotnet interactive 1.0.355307..."
 
 # Remove any existing Microsoft repository configuration
 rm -f packages-microsoft-prod.deb
@@ -16,13 +16,18 @@ echo "Running on Ubuntu version: $VERSION_ID"
 wget -q https://packages.microsoft.com/config/ubuntu/$VERSION_ID/packages-microsoft-prod.deb
 dpkg -i packages-microsoft-prod.deb
 
-# Update package list and install .NET SDK
-apt-get update
-apt-get install -y dotnet-sdk-6.0
-
 # Create necessary directories
 mkdir -p /root/.local/share/jupyter/kernels/fsharp
 mkdir -p /root/.local/share/jupyter/kernels/csharp
+
+# Create required directories
+sudo mkdir -p /usr/share/dotnet/host/fxr
+sudo mkdir -p /usr/share/dotnet/sdk
+sudo mkdir -p /usr/share/dotnet/shared
+
+# Reinstall the SDK to ensure proper setup
+sudo apt-get remove -y dotnet-sdk-6.0
+sudo apt-get install -y dotnet-sdk-6.0
 
 # Install dotnet interactive
 dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.355307
