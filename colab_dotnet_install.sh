@@ -3,6 +3,21 @@ set -e  # Exit on error
 
 echo "Installing dotnet interactive for existing .NET installation..."
 
+# Try to locate dotnet executable
+if command -v dotnet >/dev/null 2>&1; then
+  echo "dotnet command found in PATH"
+else
+  echo "dotnet command not found in PATH, attempting to locate..."
+  DOTNET_PATH=$(find /usr/share/dotnet -name dotnet 2>/dev/null)
+  if [ -n "$DOTNET_PATH" ]; then
+    export PATH="$PATH:$(dirname "$DOTNET_PATH")"
+    echo "dotnet command found at $(dirname "$DOTNET_PATH") and added to PATH"
+  else
+    echo "dotnet command not found. Aborting."
+    exit 1
+  fi
+fi
+
 # Determine .NET version
 DOTNET_VERSION=$(dotnet --version | cut -d '.' -f 1)
 
