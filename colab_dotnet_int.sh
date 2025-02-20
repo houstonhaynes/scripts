@@ -17,30 +17,28 @@ rm packages-microsoft-prod.deb
 apt-get update
 apt-get install -y apt-transport-https
 
-# First install the runtime and host
-apt-get install -y dotnet-runtime-6.0
-apt-get install -y aspnetcore-runtime-6.0
+# First install the core components
 apt-get install -y dotnet-host
 apt-get install -y dotnet-hostfxr-6.0
-
-# Create the version directory (6.0.0) in fxr if it doesn't exist
-mkdir -p /usr/share/dotnet/host/fxr/6.0.0
-
-# Now install the SDK
+apt-get install -y dotnet-runtime-6.0
+apt-get install -y aspnetcore-runtime-6.0
 apt-get install -y dotnet-sdk-6.0
+
+# Create symlink for libhostfxr.so
+find /usr/share/dotnet -name "libhostfxr.so" -exec ln -sf {} /usr/share/dotnet/host/fxr/6.0.0/libhostfxr.so \;
 
 # Set environment variables
 export DOTNET_ROOT=/usr/share/dotnet
 export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
-# Wait a moment for installation to complete
-sleep 5
-
 # Verify installation
+echo "Verifying dotnet installation..."
 dotnet --version || {
     echo "Failed to verify dotnet installation"
-    ls -la /usr/share/dotnet/host/fxr/  # Debug output
+    echo "Checking library locations:"
+    find /usr/share/dotnet -name "libhostfxr.so"
+    ls -la /usr/share/dotnet/host/fxr/6.0.0/
     exit 1
 }
 
@@ -65,10 +63,4 @@ EOF
 
 cat > /root/.local/share/jupyter/kernels/.net-csharp/kernel.json << EOF
 {
-  "argv": ["$HOME/.dotnet/tools/dotnet-interactive", "jupyter", "--default-kernel", "csharp", "--http-port-range", "1000-3000", "{connection_file}"],
-  "display_name": ".NET (C#)",
-  "language": "C#"
-}
-EOF
-
-echo "Installation completed. Please verify the kernels are available in Jupyter."
+  "argv": ["$HOME/.dotnet/tools/dotnet-interactive", "jupyter", "--default-kernel", "csharp", "--http-
