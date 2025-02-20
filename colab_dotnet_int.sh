@@ -23,11 +23,23 @@ fi
 # Create /usr/share/dotnet/host if it doesn't exist
 sudo mkdir -p /usr/share/dotnet/host
 
+# Check if /usr/share/dotnet/shared exists
+if [ -d "/usr/share/dotnet/shared" ]; then
+    SHARED_DIR="/usr/share/dotnet/shared"
+else
+    # Try an alternative location
+    SHARED_DIR="/opt/dotnet/shared"  # Example alternative path
+    if [ ! -d "$SHARED_DIR" ]; then
+        echo "Error: /usr/share/dotnet/shared and /opt/dotnet/shared not found."
+        exit 1
+    fi
+fi
+
 # Find the .NET Core App directory
-DOTNET_CORE_APP_DIR=$(find /usr/share/dotnet/shared -name "Microsoft.NETCore.App" -type d)
+DOTNET_CORE_APP_DIR=$(find "$SHARED_DIR" -name "Microsoft.NETCore.App" -type d)
 
 if [ -z "$DOTNET_CORE_APP_DIR" ]; then
-    echo "Error: Microsoft.NETCore.App directory not found."
+    echo "Error: Microsoft.NETCore.App directory not found in $SHARED_DIR."
     exit 1
 fi
 
