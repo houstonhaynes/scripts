@@ -4,14 +4,36 @@
 # Houston Haynes (h3@ad4s.co), February 2025
 
 echo "Installing dotnet-sdk-6.0 and dotnet interactive..."
-wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-dpkg -i packages-microsoft-prod.deb > /dev/null
-apt-get update > /dev/null
-apt-get install dotnet-sdk-6.0 > /dev/null
-dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.355307 > /dev/null
+
+# Remove any existing Microsoft repository configuration
+rm -f packages-microsoft-prod.deb
+
+# Get Ubuntu version
+source /etc/os-release
+echo "Running on Ubuntu version: $VERSION_ID"
+
+# Download and install Microsoft repository
+wget -q https://packages.microsoft.com/config/ubuntu/$VERSION_ID/packages-microsoft-prod.deb
+dpkg -i packages-microsoft-prod.deb
+
+# Update package list and install .NET SDK
+apt-get update
+apt-get install -y dotnet-sdk-6.0
+
+# Create necessary directories
+mkdir -p /root/.local/share/jupyter/kernels/fsharp
+mkdir -p /root/.local/share/jupyter/kernels/csharp
+
+# Install dotnet interactive
+dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.355307
+
+# Add dotnet tools to PATH
 export PATH=$PATH:$HOME/.dotnet/tools
-dotnet interactive jupyter install > /dev/null
+dotnet interactive jupyter install
+
+# Create kernel configurations
 echo "{\"argv\": [\"$HOME/.dotnet/tools/dotnet-interactive\", \"jupyter\", \"--default-kernel\", \"fsharp\", \"--http-port-range\", \"1000-3000\", \"{connection_file}\"], \"display_name\": \".NET (F#)\", \"language\": \"F#\"}" > /root/.local/share/jupyter/kernels/fsharp/kernel.json
 echo "{\"argv\": [\"$HOME/.dotnet/tools/dotnet-interactive\", \"jupyter\", \"--default-kernel\", \"csharp\", \"--http-port-range\", \"1000-3000\", \"{connection_file}\"], \"display_name\": \".NET (C#)\", \"language\": \"C#\"}" > /root/.local/share/jupyter/kernels/csharp/kernel.json
+
 echo "Done."
 echo "Select \"Runtime\" -> \"Change Runtime Type\" and click \"Save\" to activate for this notebook"
