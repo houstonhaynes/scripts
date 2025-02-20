@@ -20,16 +20,22 @@ if [ ! -d "/usr/share/dotnet" ]; then
     exit 1
 fi
 
+# Remove existing symlink if it exists
+if [ -L "/usr/share/dotnet/host/fxr" ]; then
+    echo "Removing existing symlink /usr/share/dotnet/host/fxr..."
+    sudo rm /usr/share/dotnet/host/fxr
+fi
+
 # Create /usr/share/dotnet/host if it doesn't exist
 sudo mkdir -p /usr/share/dotnet/host
 
 # Find the correct hostfxr directory
-HOSTFXR_DIR=$(find /usr/share/dotnet/host/fxr -type d -name "[0-9]*\.[0-9]*" 2>/dev/null | head -n 1)
+HOSTFXR_DIR=$(find /usr/lib/dotnet/shared/Microsoft.NETCore.App -type d -name "[0-9]*\.[0-9]*" 2>/dev/null | head -n 1)
 
 if [ -z "$HOSTFXR_DIR" ]; then
     echo "Error: No versioned hostfxr directory found."
-    echo "Contents of /usr/share/dotnet/host/fxr:"
-    ls -l /usr/share/dotnet/host/fxr
+    echo "Contents of /usr/lib/dotnet/shared/Microsoft.NETCore.App:"
+    ls -l /usr/lib/dotnet/shared/Microsoft.NETCore.App
     exit 1
 fi
 
