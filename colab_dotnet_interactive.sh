@@ -23,6 +23,10 @@ fi
 # Verify the framework setup
 echo "Verifying .NET setup..."
 dotnet --list-runtimes
+if [ $? -ne 0 ]; then
+    echo "Error: .NET setup verification failed"
+    exit 1
+fi
 
 # Add dotnet tools to PATH
 export PATH=$PATH:$HOME/.dotnet/tools
@@ -30,10 +34,18 @@ export PATH=$PATH:$HOME/.dotnet/tools
 # Install dotnet interactive
 echo "Installing dotnet interactive..."
 dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.355307
+if [ $? -ne 0 ]; then
+    echo "Error: dotnet interactive installation failed"
+    exit 1
+fi
 
 # Install Jupyter kernels
 echo "Installing Jupyter kernels..."
 dotnet interactive jupyter install
+if [ $? -ne 0 ]; then
+    echo "Error: Jupyter kernels installation failed"
+    exit 1
+fi
 
 # Create kernel configurations
 echo "Creating kernel configurations..."
