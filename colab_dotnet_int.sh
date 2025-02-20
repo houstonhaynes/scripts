@@ -6,6 +6,10 @@ echo "Installing .NET 9 SDK and dotnet interactive..."
 source /etc/os-release
 echo "Running on Ubuntu version: $VERSION_ID"
 
+# Remove any existing .NET installations
+echo "Removing any existing .NET installations..."
+sudo apt-get remove -y dotnet* aspnetcore* netstandard-targeting-pack*
+
 # Download and install Microsoft repository
 wget -q https://packages.microsoft.com/config/ubuntu/$VERSION_ID/packages-microsoft-prod.deb
 sudo dpkg -i packages-microsoft-prod.deb
@@ -33,7 +37,7 @@ export PATH=$PATH:$HOME/.dotnet/tools
 
 # Install dotnet interactive
 echo "Installing dotnet interactive..."
-dotnet tool install -g Microsoft.dotnet-interactive
+dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.375801
 if [ $? -ne 0 ]; then
     echo "Error: dotnet interactive installation failed"
     exit 1
