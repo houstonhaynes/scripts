@@ -63,4 +63,10 @@ EOF
 
 cat > /root/.local/share/jupyter/kernels/.net-csharp/kernel.json << EOF
 {
-  "argv": ["$HOME/.dotnet/tools/dotnet-interactive", "jupyter", "--default-kernel", "csharp", "--http-
+  "argv": ["$HOME/.dotnet/tools/dotnet-interactive", "jupyter", "--default-kernel", "csharp", "--http-port-range", "1000-3000", "{connection_file}"],
+  "display_name": ".NET (C#)",
+  "language": "C#"
+}
+EOF
+
+echo "Installation completed. Please verify the kernels are available in Jupyter."
