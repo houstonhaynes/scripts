@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -ex  # Exit on error and print each command
+set -e  # Exit on error
 
 echo "Installing dotnet-sdk-6.0 and dotnet interactive..."
 
@@ -14,58 +14,60 @@ wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-pr
 dpkg -i packages-microsoft-prod.deb
 rm packages-microsoft-prod.deb
 
-# Update package list
+# Update package list and install dependencies
 apt-get update
-
-# Install dependencies
 apt-get install -y apt-transport-https
 
-# Install runtime first
+# Install .NET SDK and runtime
 apt-get install -y dotnet-runtime-deps-6.0
 apt-get install -y dotnet-runtime-6.0
 apt-get install -y aspnetcore-runtime-6.0
 apt-get install -y dotnet-host
 apt-get install -y dotnet-hostfxr-6.0
-
-# Now install SDK
 apt-get install -y dotnet-sdk-6.0
 
-# Create directory structure
+# Create required directories
 mkdir -p /usr/share/dotnet/host/fxr/6.0.36
 mkdir -p /usr/share/dotnet/shared/Microsoft.NETCore.App/6.0.36
 mkdir -p /usr/share/dotnet/shared/Microsoft.AspNetCore.App/6.0.36
 
 # Create symlinks
-if [ -f "/usr/lib/dotnet/host/fxr/6.0.36/libhostfxr.so" ]; then
-    ln -sf /usr/lib/dotnet/host/fxr/6.0.36/libhostfxr.so /usr/share/dotnet/host/fxr/6.0.36/
-fi
+ln -sf /usr/lib/dotnet/host/fxr/6.0.36/libhostfxr.so /usr/share/dotnet/host/fxr/6.0.36/
 
-# Copy shared frameworks if they exist
-if [ -d "/usr/lib/dotnet/shared/Microsoft.NETCore.App/6.0.36" ]; then
-    cp -r /usr/lib/dotnet/shared/Microsoft.NETCore.App/6.0.36/* /usr/share/dotnet/shared/Microsoft.NETCore.App/6.0.36/
-fi
-
-if [ -d "/usr/lib/dotnet/shared/Microsoft.AspNetCore.App/6.0.36" ]; then
-    cp -r /usr/lib/dotnet/shared/Microsoft.AspNetCore.App/6.0.36/* /usr/share/dotnet/shared/Microsoft.AspNetCore.App/6.0.36/
-fi
+# Copy shared frameworks
+cp -r /usr/lib/dotnet/shared/Microsoft.NETCore.App/6.0.36/* /usr/share/dotnet/shared/Microsoft.NETCore.App/6.0.36/
+cp -r /usr/lib/dotnet/shared/Microsoft.AspNetCore.App/6.0.36/* /usr/share/dotnet/shared/Microsoft.AspNetCore.App/6.0.36/
 
 # Set environment variables
 export DOTNET_ROOT=/usr/share/dotnet
 export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
-# Force ldconfig to update library cache
-ldconfig
+# Install dotnet interactive
+dotnet tool install -g Microsoft.dotnet-interactive
 
-# Debug information
-echo "Debug information:"
-ls -la /usr/share/dotnet/host/fxr/6.0.36/ || true
-ls -la /usr/share/dotnet/shared/Microsoft.NETCore.App/6.0.36/ || true
-ls -la /usr/share/dotnet/shared/Microsoft.AspNetCore.App/6.0.36/ || true
-find /usr -name "libhostfxr.so" || true
-find /usr/lib/dotnet/shared -type d || true
+# Create jupyter kernel directories
+mkdir -p /root/.local/share/jupyter/kernels/.net-fsharp
+mkdir -p /root/.local/share/jupyter/kernels/.net-csharp
 
-# Final test
-dotnet --version
+# Install jupyter integration
+dotnet interactive jupyter install
 
-echo "Installation completed. Please check the debug output above."
+# Create kernel.json files
+cat > /root/.local/share/jupyter/kernels/.net-fsharp/kernel.json << EOF
+{
+  "argv": ["$HOME/.dotnet/tools/dotnet-interactive", "jupyter", "--default-kernel", "fsharp", "--http-port-range", "1000-3000", "{connection_file}"],
+  "display_name": ".NET (F#)",
+  "language": "F#"
+}
+EOF
+
+cat > /root/.local/share/jupyter/kernels/.net-csharp/kernel.json << EOF
+{
+  "argv": ["$HOME/.dotnet/tools/dotnet-interactive", "jupyter", "--default-kernel", "csharp", "--http-port-range", "1000-3000", "{connection_file}"],
+  "display_name": ".NET (C#)",
+  "language": "C#"
+}
+EOF
+
+echo "Installation completed. Now you can use .NET in Jupyter notebooks!"
