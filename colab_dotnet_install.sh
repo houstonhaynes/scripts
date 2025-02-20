@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-set -e  # Exit on error
+set -e
 
-echo "Installing .NET 9 and dotnet interactive..."
+echo "Installing .NET SDK and dotnet-interactive..."
 
 # Add Microsoft package repository
 wget -q https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb
@@ -12,52 +12,27 @@ rm packages-microsoft-prod.deb
 apt-get update
 apt-get install -y apt-transport-https
 
-# Install .NET 9
+# Install .NET SDK
 apt-get install -y dotnet-sdk-9.0
-
-# Clean up NuGet cache
-rm -rf /root/.nuget/packages
 
 # Set environment variables
 export DOTNET_ROOT=/usr/share/dotnet
 export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
-export NUGET_PACKAGES=/root/.nuget/packages
 
-# Install dotnet interactive (specific version)
+# Install dotnet-interactive
 dotnet tool install -g Microsoft.dotnet-interactive
 
-# Create jupyter kernel directories
-mkdir -p /root/.local/share/jupyter/kernels/.net-fsharp
-mkdir -p /root/.local/share/jupyter/kernels/.net-csharp
-
-# Create kernel.json files with explicit kernel names
-cat > /root/.local/share/jupyter/kernels/.net-fsharp/kernel.json << EOF
-{
-  "argv": ["/root/.dotnet/tools/dotnet-interactive", "jupyter", "--kernel-name", "fsharp", "{connection_file}"],
-  "display_name": ".NET (F#)",
-  "language": "F#"
-}
-EOF
-
-cat > /root/.local/share/jupyter/kernels/.net-csharp/kernel.json << EOF
-{
-  "argv": ["/root/.dotnet/tools/dotnet-interactive", "jupyter", "--kernel-name", "csharp", "{connection_file}"],
-  "display_name": ".NET (C#)",
-  "language": "C#"
-}
-EOF
-
-# Update Jupyter kernelspecs
-jupyter kernelspec list
-
-# Verify installation
-echo "Verifying installation..."
+# List installed tools
+echo "Installed tools:"
 dotnet tool list -g
+
+# Install Jupyter kernels
+dotnet interactive jupyter install
+
+# List kernelspecs
+echo "Installed kernelspecs:"
 jupyter kernelspec list
 
-echo "Done."
-echo "After running this script:"
-echo "1. Select \"Runtime\" -> \"Change Runtime Type\""
-echo "2. Choose \".NET (C#)\" or \".NET (F#)\" from the dropdown"
-echo "3. Click \"Save\""
+echo "Done!"
+echo "Please select .NET (C#) or .NET (F#) from the Runtime -> Change runtime type menu."
