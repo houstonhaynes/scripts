@@ -12,7 +12,8 @@ dpkg -i packages-microsoft-prod.deb
 
 # Update package list and install .NET SDK packages
 apt-get update
-apt-get install -y dotnet-sdk-6.0 aspnetcore-runtime-6.0 dotnet-runtime-6.0
+apt-get install -y dotnet-sdk-6.0 aspnetcore-runtime-6.0 dotnet-runtime-6.0 dotnet-hostfxr-6.0
+sudo ln -s /usr/share/dotnet/shared/Microsoft.NETCore.App /usr/share/dotnet/host/fxr
 
 # After installing .NET SDK
 if [ ! -d "/usr/share/dotnet" ]; then
