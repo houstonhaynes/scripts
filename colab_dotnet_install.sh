@@ -8,6 +8,7 @@ rm -rf /usr/share/dotnet
 rm -rf /usr/lib/dotnet
 rm -f /etc/apt/sources.list.d/microsoft-prod.list
 rm -f /etc/apt/sources.list.d/microsoft-prod.list.save
+rm -rf /root/.local/share/jupyter/kernels/.net-*  # Clean up old kernels
 
 # Add Microsoft package repository
 wget -q https://packages.microsoft.com/config/ubuntu/22.04/packages-microsoft-prod.deb
@@ -44,19 +45,16 @@ export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
 # Install dotnet interactive
-dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.355307
+dotnet tool install -g Microsoft.dotnet-interactive
 
 # Create jupyter kernel directories
 mkdir -p /root/.local/share/jupyter/kernels/.net-fsharp
 mkdir -p /root/.local/share/jupyter/kernels/.net-csharp
 
-# Install jupyter integration
-dotnet interactive jupyter install
-
-# Create kernel.json files
+# Create kernel.json files with absolute paths
 cat > /root/.local/share/jupyter/kernels/.net-fsharp/kernel.json << EOF
 {
-  "argv": ["$HOME/.dotnet/tools/dotnet-interactive", "jupyter", "--default-kernel", "fsharp", "--http-port-range", "1000-3000", "{connection_file}"],
+  "argv": ["/root/.dotnet/tools/dotnet-interactive", "jupyter", "--kernel-name", "fsharp", "--default-kernel", "fsharp", "--http-port-range", "1000-3000", "{connection_file}"],
   "display_name": ".NET (F#)",
   "language": "F#"
 }
@@ -64,10 +62,18 @@ EOF
 
 cat > /root/.local/share/jupyter/kernels/.net-csharp/kernel.json << EOF
 {
-  "argv": ["$HOME/.dotnet/tools/dotnet-interactive", "jupyter", "--default-kernel", "csharp", "--http-port-range", "1000-3000", "{connection_file}"],
+  "argv": ["/root/.dotnet/tools/dotnet-interactive", "jupyter", "--kernel-name", "csharp", "--default-kernel", "csharp", "--http-port-range", "1000-3000", "{connection_file}"],
   "display_name": ".NET (C#)",
   "language": "C#"
 }
 EOF
+
+# Let dotnet interactive install its kernels
+dotnet interactive jupyter install
+
+# Restart Jupyter kernel service if it exists
+if systemctl is-active --quiet jupyter; then
+    systemctl restart jupyter
+fi
 
 echo "Installation completed. Now you can use .NET in Jupyter notebooks!"
