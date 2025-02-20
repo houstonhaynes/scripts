@@ -3,7 +3,7 @@
 # Atilim Gunes Baydin (gunes@robots.ox.ac.uk), February 2022
 # Houston Haynes (h3@ad4s.co), February 2025
 
-echo "Installing dotnet-sdk-6.0 and dotnet interactive..."
+echo "Installing dotnet-sdk-6.0 and pinned dotnet interactive..."
 
 # Remove any existing Microsoft repository configuration
 rm -f packages-microsoft-prod.deb
