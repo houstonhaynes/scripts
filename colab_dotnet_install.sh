@@ -62,24 +62,19 @@ rm -rf /var/cache/apt/archives/*
 
 # Install dotnet-interactive
 echo "Installing dotnet-interactive..."
-if ! $DOTNET_ROOT/dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.611002; then
-    echo "Error: Failed to install dotnet-interactive"
-    exit 1
-fi
+dotnet tool install -g Microsoft.dotnet-interactive
+
 
 # Verify installation
 echo "Verifying dotnet-interactive installation..."
-if ! $DOTNET_ROOT/dotnet tool list -g | grep -q "microsoft.dotnet-interactive"; then
+if ! dotnet tool list -g | grep -q "microsoft.dotnet-interactive"; then
     echo "Error: dotnet-interactive not found in global tools"
     exit 1
 fi
 
 # Install Jupyter kernel
 echo "Installing .NET kernel for Jupyter..."
-if ! $DOTNET_ROOT/dotnet interactive jupyter install --force; then
-    echo "Error: Failed to install Jupyter kernel"
-    exit 1
-fi
+dotnet interactive jupyter install --force
 
 echo "Installation completed successfully!"
 echo "Please select '.NET (C#)' from the Jupyter kernel list when creating a new notebook."
