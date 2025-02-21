@@ -57,12 +57,6 @@ fi
 
 echo "SDK Version found: $SDK_VERSION"
 
-# Prepare system for .NET tools
-echo "Preparing system environment..."
-sync
-echo 1 > /proc/sys/vm/drop_caches 2>/dev/null || true
-sleep 10
-
 # Set additional environment variables
 export DOTNET_CLI_HOME=/tmp/dotnet_home
 export NUGET_PACKAGES=/tmp/nuget_packages
@@ -77,6 +71,8 @@ chmod 755 ~/.dotnet/tools
 
 # Try alternative installation approach
 echo "Installing dotnet-interactive..."
+echo "Installing dotnet-interactive..."
+DOTNET_INTERACTIVE_VERSION="1.0.611002" 
 MAX_RETRIES=3
 RETRY_COUNT=0
 INSTALL_SUCCESS=false
