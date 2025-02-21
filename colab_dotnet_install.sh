@@ -60,24 +60,19 @@ echo "Clearing system caches and temporary space..."
 apt-get clean
 find /tmp -type f ! -name 'colab_runtime.sock' -delete
 find /tmp -type d -empty -delete
-rm -rf /var/tmp/*
 rm -rf /var/cache/apt/archives/*
 
-# Set additional environment variables
-export DOTNET_CLI_HOME=/tmp/dotnet_home
-export NUGET_PACKAGES=/tmp/nuget_packages
-mkdir -p "$DOTNET_CLI_HOME"
+# Set additional environment variables to use standard locations
+export DOTNET_CLI_HOME=~/.dotnet
+export NUGET_PACKAGES=~/.nuget/packages
+mkdir -p "$DOTNET_CLI_HOME/tools"
 mkdir -p "$NUGET_PACKAGES"
+chmod 755 "$DOTNET_CLI_HOME"
+chmod 755 "$NUGET_PACKAGES"
 
-# Create fresh tools directory
-echo "Setting up tools directory..."
-rm -rf ~/.dotnet/tools
-mkdir -p ~/.dotnet/tools
-chmod 755 ~/.dotnet/tools
-
-# Try alternative installation approach
-echo "Installing dotnet-interactive..."
-DOTNET_INTERACTIVE_VERSION="1.0.611002" 
+# Set additional environment variables to align with SDK location
+export DOTNET_CLI_HOME=/usr/share/dotnet/cli
+export NUGET_PACKAGES
 MAX_RETRIES=3
 RETRY_COUNT=0
 INSTALL_SUCCESS=false
