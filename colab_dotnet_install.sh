@@ -53,44 +53,53 @@ if [ -z "$SDK_VERSION" ]; then
     exit 1
 fi
 
+# ...existing code until SDK installation verification...
+
 echo "SDK Version found: $SDK_VERSION"
 
-# Initialize .NET before installing tools
-echo "Initializing .NET environment..."
-mkdir -p /tmp/dotnet-warmup
-cd /tmp/dotnet-warmup
-if ! $DOTNET_ROOT/dotnet new console --no-restore > /dev/null 2>&1; then
-    echo "Warning: Initial .NET warmup failed, continuing anyway..."
-fi
-cd - > /dev/null
+# Prepare system for .NET tools
+echo "Preparing system environment..."
+sync
+echo 1 > /proc/sys/vm/drop_caches 2>/dev/null || true
+sleep 10
 
-# Install dotnet-interactive with newer version
-echo "Installing dotnet-interactive..."
-DOTNET_INTERACTIVE_VERSION="1.0.611002"  # Latest version compatible with .NET 9
+# Set additional environment variables
+export DOTNET_CLI_HOME=/tmp/dotnet_home
+export NUGET_PACKAGES=/tmp/nuget_packages
+mkdir -p "$DOTNET_CLI_HOME"
+mkdir -p "$NUGET_PACKAGES"
 
-# Create tools directory if it doesn't exist
+# Create fresh tools directory
+echo "Setting up tools directory..."
+rm -rf ~/.dotnet/tools
 mkdir -p ~/.dotnet/tools
+chmod 755 ~/.dotnet/tools
 
-# Try installation with retry logic
+# Try alternative installation approach
+echo "Installing dotnet-interactive..."
 MAX_RETRIES=3
 RETRY_COUNT=0
 INSTALL_SUCCESS=false
 
 while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$INSTALL_SUCCESS" = false ]; do
     echo "Attempt $((RETRY_COUNT + 1)) of $MAX_RETRIES to install dotnet-interactive..."
-    sleep 5  # Wait between attempts
     
-    if $DOTNET_ROOT/dotnet tool install -g Microsoft.dotnet-interactive --version $DOTNET_INTERACTIVE_VERSION > /dev/null 2>&1; then
-        INSTALL_SUCCESS=true
-        break
-    fi
+    # Clear temporary directories
+    rm -rf /tmp/dotnet* 2>/dev/null || true
+    rm -rf "$NUGET_PACKAGES"/* 2>/dev/null || true
     
-    if $DOTNET_ROOT/dotnet tool update -g Microsoft.dotnet-interactive --version $DOTNET_INTERACTIVE_VERSION > /dev/null 2>&1; then
+    # Try installation with NuGet configuration
+    if $DOTNET_ROOT/dotnet nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json --name dotnet-tools > /dev/null 2>&1 && \
+       $DOTNET_ROOT/dotnet tool install -g Microsoft.dotnet-interactive \
+        --version $DOTNET_INTERACTIVE_VERSION \
+        --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json \
+        > /dev/null 2>&1; then
         INSTALL_SUCCESS=true
         break
     fi
     
     RETRY_COUNT=$((RETRY_COUNT + 1))
+    sleep 15  # Longer wait between attempts
 done
 
 if [ "$INSTALL_SUCCESS" = false ]; then
