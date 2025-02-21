@@ -26,7 +26,7 @@ export NUGET_GLOBAL_PACKAGES_FOLDER=/tmp/NuGetScratch
 mkdir -p /tmp/NuGetScratch
 
 # Install dotnet-interactive (specific older version)
-dotnet tool install -g Microsoft.dotnet-interactive
+dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.522904
 
 # List installed tools
 echo "Installed tools:"
