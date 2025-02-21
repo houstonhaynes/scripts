@@ -14,6 +14,21 @@ apt-get install -y \
     zlib1g \
     procps
 
+# Set required environment variables
+export DOTNET_ROOT=/usr/share/dotnet
+export NUGET_PACKAGES=~/.nuget/packages
+export PATH=$PATH:$DOTNET_ROOT:$DOTNET_CLI_HOME/tools
+
+# Optional settings to improve installation experience
+export DOTNET_NOLOGO=1
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+
+# Ensure required directories exist
+mkdir -p "$DOTNET_CLI_HOME/tools"
+mkdir -p "$NUGET_PACKAGES"
+chmod 755 "$DOTNET_CLI_HOME"
+chmod 755 "$NUGET_PACKAGES"
+
 # Clear package cache and update
 rm -rf /var/lib/apt/lists/*
 apt-get update
@@ -28,16 +43,6 @@ rm packages-microsoft-prod.deb
 # Install .NET SDK
 apt-get update
 apt-get install -y dotnet-sdk-9.0
-
-# Export required environment variables
-export DOTNET_ROOT=/usr/share/dotnet
-export PATH=$PATH:$DOTNET_ROOT:~/.dotnet/tools
-export DOTNET_NOLOGO=1
-export DOTNET_CLI_TELEMETRY_OPTOUT=1
-export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
-
-# Allow system to settle
-sleep 5
 
 # Verify SDK installation with more robust checks
 echo "Verifying .NET SDK installation..."
@@ -61,14 +66,6 @@ apt-get clean
 find /tmp -type f ! -name 'colab_runtime.sock' -delete
 find /tmp -type d -empty -delete
 rm -rf /var/cache/apt/archives/*
-
-# Set additional environment variables to use standard locations
-export DOTNET_CLI_HOME=~/.dotnet
-export NUGET_PACKAGES=~/.nuget/packages
-mkdir -p "$DOTNET_CLI_HOME/tools"
-mkdir -p "$NUGET_PACKAGES"
-chmod 755 "$DOTNET_CLI_HOME"
-chmod 755 "$NUGET_PACKAGES"
 
 MAX_RETRIES=3
 RETRY_COUNT=0
