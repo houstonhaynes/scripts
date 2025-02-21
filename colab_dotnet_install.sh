@@ -18,7 +18,7 @@ apt-get install -y dotnet-sdk-9.0
 
 # Increase swap space (1GB)
 echo "Setting up swapspace"
-fallocate -c -l 1G /swapfile
+dd if=/dev/zero of=/swapfile bs=1M count=1024
 chmod 600 /swapfile
 mkswap /swapfile
 swapon /swapfile
