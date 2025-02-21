@@ -4,15 +4,13 @@ set -e
 echo "Installing .NET SDK and dotnet-interactive..."
 
 # Install required dependencies first
-apt-get install -y \
-    libc6 \
-    libgcc1 \
-    libgssapi-krb5-2 \
-    libicu70 \
-    libssl3 \
-    libstdc++6 \
-    zlib1g \
-    procps
+apt-get install -y procps
+
+# Ensure required directories exist
+mkdir -p "$DOTNET_CLI_HOME/tools"
+mkdir -p "$NUGET_PACKAGES"
+chmod 755 "$DOTNET_CLI_HOME"
+chmod 755 "$NUGET_PACKAGES"
 
 # Set required environment variables
 export DOTNET_ROOT=/usr/share/dotnet
@@ -22,12 +20,6 @@ export PATH=$PATH:$DOTNET_ROOT:$DOTNET_CLI_HOME/tools
 # Optional settings to improve installation experience
 export DOTNET_NOLOGO=1
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
-
-# Ensure required directories exist
-mkdir -p "$DOTNET_CLI_HOME/tools"
-mkdir -p "$NUGET_PACKAGES"
-chmod 755 "$DOTNET_CLI_HOME"
-chmod 755 "$NUGET_PACKAGES"
 
 # Clear package cache and update
 rm -rf /var/lib/apt/lists/*
