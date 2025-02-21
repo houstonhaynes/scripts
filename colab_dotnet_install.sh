@@ -6,7 +6,9 @@ echo "Installing .NET SDK and dotnet-interactive..."
 # Install required dependencies first
 apt-get install -y procps
 
-# Ensure required directories exist
+# Set up .NET environment variables
+export DOTNET_CLI_HOME=~/.dotnet
+export NUGET_PACKAGES=~/.nuget/packages
 mkdir -p "$DOTNET_CLI_HOME/tools"
 mkdir -p "$NUGET_PACKAGES"
 chmod 755 "$DOTNET_CLI_HOME"
@@ -14,7 +16,6 @@ chmod 755 "$NUGET_PACKAGES"
 
 # Set required environment variables
 export DOTNET_ROOT=/usr/share/dotnet
-export NUGET_PACKAGES=~/.nuget/packages
 export PATH=$PATH:$DOTNET_ROOT:$DOTNET_CLI_HOME/tools
 
 # Optional settings to improve installation experience
@@ -58,6 +59,8 @@ apt-get clean
 find /tmp -type f ! -name 'colab_runtime.sock' -delete
 find /tmp -type d -empty -delete
 rm -rf /var/cache/apt/archives/*
+
+
 
 MAX_RETRIES=3
 RETRY_COUNT=0
