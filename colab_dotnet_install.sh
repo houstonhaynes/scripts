@@ -13,11 +13,14 @@ apt-get update
 apt-get upgrade -y
 apt-get install -y apt-transport-https
 
+# Install dependencies
+apt-get install -y libc6 libgcc1 libgssapi-krb5-2 libicu70 libssl1.1 libstdc++6 zlib1g
+
 # Install .NET SDK
 apt-get install -y dotnet-sdk-9.0
 
-# Install dotnet-interactive (specific older version)
-dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.553001
+# Install dotnet-interactive
+dotnet tool install -g Microsoft.dotnet-interactive
 
 # List installed tools
 echo "Installed tools:"
