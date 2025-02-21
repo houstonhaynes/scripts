@@ -37,7 +37,7 @@ export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 
 # Allow system to settle
-sleep 10
+sleep 5
 
 # Verify SDK installation with more robust checks
 echo "Verifying .NET SDK installation..."
@@ -55,32 +55,59 @@ fi
 
 echo "SDK Version found: $SDK_VERSION"
 
-# Install dotnet-interactive
+# Initialize .NET before installing tools
+echo "Initializing .NET environment..."
+mkdir -p /tmp/dotnet-warmup
+cd /tmp/dotnet-warmup
+if ! $DOTNET_ROOT/dotnet new console --no-restore > /dev/null 2>&1; then
+    echo "Warning: Initial .NET warmup failed, continuing anyway..."
+fi
+cd - > /dev/null
+
+# Install dotnet-interactive with newer version
 echo "Installing dotnet-interactive..."
-DOTNET_INTERACTIVE_VERSION="1.0.522904"  # Version compatible with .NET 9
+DOTNET_INTERACTIVE_VERSION="1.0.611002"  # Latest version compatible with .NET 9
 
 # Create tools directory if it doesn't exist
 mkdir -p ~/.dotnet/tools
 
-# Install dotnet-interactive with specific version
-if ! $DOTNET_ROOT/dotnet tool install -g Microsoft.dotnet-interactive --version $DOTNET_INTERACTIVE_VERSION; then
-    echo "First install attempt failed, trying to update if already installed..."
-    if ! $DOTNET_ROOT/dotnet tool update -g Microsoft.dotnet-interactive --version $DOTNET_INTERACTIVE_VERSION; then
-        echo "Error: Failed to install/update dotnet-interactive"
-        exit 1
+# Try installation with retry logic
+MAX_RETRIES=3
+RETRY_COUNT=0
+INSTALL_SUCCESS=false
+
+while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$INSTALL_SUCCESS" = false ]; do
+    echo "Attempt $((RETRY_COUNT + 1)) of $MAX_RETRIES to install dotnet-interactive..."
+    sleep 5  # Wait between attempts
+    
+    if $DOTNET_ROOT/dotnet tool install -g Microsoft.dotnet-interactive --version $DOTNET_INTERACTIVE_VERSION > /dev/null 2>&1; then
+        INSTALL_SUCCESS=true
+        break
     fi
+    
+    if $DOTNET_ROOT/dotnet tool update -g Microsoft.dotnet-interactive --version $DOTNET_INTERACTIVE_VERSION > /dev/null 2>&1; then
+        INSTALL_SUCCESS=true
+        break
+    fi
+    
+    RETRY_COUNT=$((RETRY_COUNT + 1))
+done
+
+if [ "$INSTALL_SUCCESS" = false ]; then
+    echo "Error: Failed to install dotnet-interactive after $MAX_RETRIES attempts"
+    exit 1
 fi
 
-# Verify dotnet-interactive installation
+# Verify installation
 echo "Verifying dotnet-interactive installation..."
-if ! $DOTNET_ROOT/dotnet interactive --version; then
-    echo "Error: dotnet-interactive verification failed"
+if ! $DOTNET_ROOT/dotnet tool list -g | grep -q "microsoft.dotnet-interactive"; then
+    echo "Error: dotnet-interactive not found in global tools"
     exit 1
 fi
 
 # Install Jupyter kernel
 echo "Installing .NET kernel for Jupyter..."
-if ! $DOTNET_ROOT/dotnet interactive jupyter install; then
+if ! $DOTNET_ROOT/dotnet interactive jupyter install --force; then
     echo "Error: Failed to install Jupyter kernel"
     exit 1
 fi
