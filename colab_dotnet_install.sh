@@ -16,13 +16,21 @@ apt-get install -y apt-transport-https
 # Install .NET SDK
 apt-get install -y dotnet-sdk-9.0
 
+# Increase swap space (1GB)
+echo "Setting up swapspace"
+fallocate -c -l 1G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
+
 # Set environment variables
 export DOTNET_ROOT=/usr/share/dotnet
 export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
-# Install dotnet-interactive (latest version)
-dotnet tool install -g Microsoft.dotnet-interactive
+# Install dotnet-interactive (specific older version)
+dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.607001
 
 # List installed tools
 echo "Installed tools:"
