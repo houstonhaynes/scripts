@@ -70,9 +70,6 @@ mkdir -p "$NUGET_PACKAGES"
 chmod 755 "$DOTNET_CLI_HOME"
 chmod 755 "$NUGET_PACKAGES"
 
-# Set additional environment variables to align with SDK location
-export DOTNET_CLI_HOME=/usr/share/dotnet/cli
-export NUGET_PACKAGES
 MAX_RETRIES=3
 RETRY_COUNT=0
 INSTALL_SUCCESS=false
