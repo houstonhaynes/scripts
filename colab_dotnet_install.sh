@@ -14,7 +14,7 @@ apt-get upgrade -y
 apt-get install -y apt-transport-https
 
 # Install dependencies
-apt-get install -y libc6 libgcc1 libgssapi-krb5-2 libicu70 libssl1.1 libstdc++6 zlib1g
+apt-get install -y libc6 libgcc-s1 libgssapi-krb5-2 libicu70 libssl3 libstdc++6 zlib1g
 
 # Install .NET SDK
 apt-get install -y dotnet-sdk-9.0
