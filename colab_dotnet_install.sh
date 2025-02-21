@@ -60,35 +60,10 @@ find /tmp -type f ! -name 'colab_runtime.sock' -delete
 find /tmp -type d -empty -delete
 rm -rf /var/cache/apt/archives/*
 
-
-
-MAX_RETRIES=3
-RETRY_COUNT=0
-INSTALL_SUCCESS=false
-
-while [ $RETRY_COUNT -lt $MAX_RETRIES ] && [ "$INSTALL_SUCCESS" = false ]; do
-    echo "Attempt $((RETRY_COUNT + 1)) of $MAX_RETRIES to install dotnet-interactive..."
-    
-    # Clear temporary directories
-    rm -rf /tmp/dotnet* 2>/dev/null || true
-    rm -rf "$NUGET_PACKAGES"/* 2>/dev/null || true
-    
-    # Try installation with NuGet configuration
-    if $DOTNET_ROOT/dotnet nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json --name dotnet-tools > /dev/null 2>&1 && \
-       $DOTNET_ROOT/dotnet tool install -g Microsoft.dotnet-interactive \
-        --version $DOTNET_INTERACTIVE_VERSION \
-        --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json \
-        > /dev/null 2>&1; then
-        INSTALL_SUCCESS=true
-        break
-    fi
-    
-    RETRY_COUNT=$((RETRY_COUNT + 1))
-    sleep 15  # Longer wait between attempts
-done
-
-if [ "$INSTALL_SUCCESS" = false ]; then
-    echo "Error: Failed to install dotnet-interactive after $MAX_RETRIES attempts"
+# Install dotnet-interactive
+echo "Installing dotnet-interactive..."
+if ! $DOTNET_ROOT/dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.611002; then
+    echo "Error: Failed to install dotnet-interactive"
     exit 1
 fi
 
