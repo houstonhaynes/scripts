@@ -20,7 +20,6 @@ apt-get install -y dotnet-runtime-9.0 aspnetcore-runtime-9.0
 export DOTNET_ROOT=/usr/share/dotnet
 export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
-export NUGET_PACKAGES=/tmp/nuget
 
 # Limit NuGet package cache size
 export NUGET_GLOBAL_PACKAGES_FOLDER=/tmp/NuGetScratch
