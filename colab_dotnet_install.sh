@@ -10,6 +10,7 @@ rm packages-microsoft-prod.deb
 
 # Update package list and install dependencies
 apt-get update
+apt-get upgrade -y
 apt-get install -y apt-transport-https
 
 # Install .NET SDK
@@ -20,8 +21,8 @@ export DOTNET_ROOT=/usr/share/dotnet
 export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 
-# Install dotnet-interactive
-dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.611002
+# Install dotnet-interactive (latest version)
+dotnet tool install -g Microsoft.dotnet-interactive
 
 # List installed tools
 echo "Installed tools:"
