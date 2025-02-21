@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-echo "Installing .NET SDK and dotnet-interactive..."
+echo "Installing .NET Runtime and dotnet-interactive..."
 
 # Add Microsoft package repository
 wget -q https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb
@@ -13,21 +13,18 @@ apt-get update
 apt-get upgrade -y
 apt-get install -y apt-transport-https
 
-# Install .NET SDK
-apt-get install -y dotnet-sdk-9.0
-
-# Increase swap space (1GB)
-echo "Setting up swapspace"
-dd if=/dev/zero of=/swapfile bs=1M count=1024
-chmod 600 /swapfile
-mkswap -f /swapfile
-swapon /swapfile
-echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
+# Install .NET Runtime
+apt-get install -y dotnet-runtime-9.0 aspnetcore-runtime-9.0
 
 # Set environment variables
 export DOTNET_ROOT=/usr/share/dotnet
 export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
+export NUGET_PACKAGES=/tmp/nuget
+
+# Limit NuGet package cache size
+export NUGET_GLOBAL_PACKAGES_FOLDER=/tmp/NuGetScratch
+mkdir -p /tmp/NuGetScratch
 
 # Install dotnet-interactive (specific older version)
 dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.607001
@@ -42,6 +39,11 @@ dotnet interactive jupyter install
 # List kernelspecs
 echo "Installed kernelspecs:"
 jupyter kernelspec list
+
+echo "Cleaning up..."
+apt-get clean
+rm -rf /var/lib/apt/lists/*
+rm -rf /tmp/*
 
 echo "Done!"
 echo "Please select .NET (C#) or .NET (F#) from the Runtime -> Change runtime type menu."
