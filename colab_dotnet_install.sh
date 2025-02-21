@@ -3,11 +3,6 @@ set -e
 
 echo "Installing .NET SDK and dotnet-interactive..."
 
-# Give more time for the system to settle and clear memory cache
-sync
-echo 3 > /proc/sys/vm/drop_caches
-sleep 15
-
 # Install required dependencies first
 apt-get install -y \
     libc6 \
@@ -19,7 +14,8 @@ apt-get install -y \
     zlib1g \
     procps
 
-# Update package list and install dependencies
+# Clear package cache and update
+rm -rf /var/lib/apt/lists/*
 apt-get update
 apt-get upgrade -y
 apt-get install -y apt-transport-https
@@ -30,6 +26,7 @@ dpkg -i packages-microsoft-prod.deb
 rm packages-microsoft-prod.deb
 
 # Install .NET SDK
+apt-get update
 apt-get install -y dotnet-sdk-9.0
 
 # Export required environment variables
@@ -39,11 +36,15 @@ export DOTNET_NOLOGO=1
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 
-# Verify SDK installation with minimal command
+# Verify SDK installation with minimal command and better error handling
 echo "Verifying .NET SDK installation..."
-if ! $DOTNET_ROOT/dotnet --list-runtimes; then
-    echo "Error: .NET SDK verification failed"
+if ! which dotnet > /dev/null; then
+    echo "Error: dotnet command not found"
     exit 1
 fi
 
-# Rest of script remains the same...
+echo "Checking .NET version..."
+if ! dotnet --version; then
+    echo "Error: Unable to get .NET version"
+    exit 1
+fi
