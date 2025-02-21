@@ -20,7 +20,7 @@ apt-get install -y dotnet-sdk-9.0
 echo "Setting up swapspace"
 dd if=/dev/zero of=/swapfile bs=1M count=1024
 chmod 600 /swapfile
-mkswap /swapfile
+mkswap -f /swapfile
 swapon /swapfile
 echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
 
