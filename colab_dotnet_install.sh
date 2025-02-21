@@ -16,15 +16,6 @@ apt-get install -y apt-transport-https
 # Install .NET SDK
 apt-get install -y dotnet-sdk-9.0
 
-# Set environment variables
-export DOTNET_ROOT=/usr/share/dotnet
-export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
-export DOTNET_CLI_TELEMETRY_OPTOUT=1
-
-# Limit NuGet package cache size
-export NUGET_GLOBAL_PACKAGES_FOLDER=/tmp/NuGetScratch
-mkdir -p /tmp/NuGetScratch
-
 # Install dotnet-interactive (specific older version)
 dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.553001
 
