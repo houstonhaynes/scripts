@@ -53,9 +53,14 @@ if [ -z "$SDK_VERSION" ]; then
     exit 1
 fi
 
-# ...existing code until SDK installation verification...
-
 echo "SDK Version found: $SDK_VERSION"
+
+# Clear system and temp spaces
+echo "Clearing system caches and temporary space..."
+apt-get clean
+rm -rf /tmp/*
+rm -rf /var/tmp/*
+rm -rf /var/cache/apt/archives/*
 
 # Set additional environment variables
 export DOTNET_CLI_HOME=/tmp/dotnet_home
@@ -70,7 +75,6 @@ mkdir -p ~/.dotnet/tools
 chmod 755 ~/.dotnet/tools
 
 # Try alternative installation approach
-echo "Installing dotnet-interactive..."
 echo "Installing dotnet-interactive..."
 DOTNET_INTERACTIVE_VERSION="1.0.611002" 
 MAX_RETRIES=3
