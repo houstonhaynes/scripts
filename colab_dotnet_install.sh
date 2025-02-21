@@ -58,7 +58,8 @@ echo "SDK Version found: $SDK_VERSION"
 # Clear system and temp spaces
 echo "Clearing system caches and temporary space..."
 apt-get clean
-rm -rf /tmp/*
+find /tmp -type f ! -name 'colab_runtime.sock' -delete
+find /tmp -type d -empty -delete
 rm -rf /var/tmp/*
 rm -rf /var/cache/apt/archives/*
 
