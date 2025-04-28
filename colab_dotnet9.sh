@@ -145,7 +145,7 @@ dotnet tool install -g Microsoft.dotnet-interactive || {
     echo "Error installing latest .NET Interactive, trying specific version..."
     # If latest fails, try a specific version known to work with .NET 9
     # Note: You might need to update this version as .NET 9 matures
-    dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.420108
+    dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.607001
 }
 
 # Step 8: Set up Jupyter kernels
