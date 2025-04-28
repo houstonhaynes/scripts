@@ -142,24 +142,26 @@ EOL
 echo "Installing required Python packages..."
 pip install -q jupyter-client zmq
 
-# Step 8: Try to install F# Interactive and C# Interactive globally
-echo "Installing F# Interactive and C# Interactive tools..."
-apt-get install -y fsharp || echo "Could not install fsharp package, will use dotnet fsi instead"
+# Step 8: Install dotnet-interactive with proper version
+echo "Installing dotnet-interactive with a stable version..."
+export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
 
-# Step 9: Create simple test F# script to verify installation
-echo "Creating F# test script..."
-mkdir -p ~/fsharp-test
-cat > ~/fsharp-test/test.fsx << EOL
-printfn "Hello from F#!"
-let fibonacci n =
-    let rec fib n a b =
-        match n with
-        | 0 -> a
-        | _ -> fib (n-1) b (a+b)
-    fib n 0 1
+# Use .NET 8 for stability and try a stable version of dotnet-interactive
+dotnet tool install -g --add-source "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json" Microsoft.dotnet-interactive --version 1.0.430901 || {
+    echo "Failed to install from Azure feed, trying NuGet..."
+    dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.430901 || {
+        echo "Failed with specific version, trying latest stable version..."
+        dotnet tool install -g Microsoft.dotnet-interactive
+    }
+}
 
-[1..10] |> List.map fibonacci |> printfn "%A"
-EOL
+# Register the interactive kernels if installation was successful
+if command -v dotnet-interactive > /dev/null 2>&1; then
+    echo "dotnet-interactive installed successfully, registering kernels..."
+    dotnet interactive jupyter install
+else
+    echo "dotnet-interactive installation failed, using direct kernels..."
+fi
 
 # Step 10: Verify if the installation was successful
 echo "Verifying installation..."
