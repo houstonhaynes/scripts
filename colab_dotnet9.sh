@@ -139,14 +139,9 @@ echo "Installing .NET Interactive..."
 export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
 
 # First check for latest compatible version of .NET Interactive for .NET 9
-echo "Looking for latest compatible version of .NET Interactive..."
+echo "Looking for a compatible version of .NET Interactive...  --version 1.0.607001"
 # Try to install latest version compatible with .NET 9
-dotnet tool install -g Microsoft.dotnet-interactive || {
-    echo "Error installing latest .NET Interactive, trying specific version..."
-    # If latest fails, try a specific version known to work with .NET 9
-    # Note: You might need to update this version as .NET 9 matures
-    dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.607001
-}
+dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.607001 
 
 # Step 8: Set up Jupyter kernels
 echo "Setting up Jupyter kernels..."
