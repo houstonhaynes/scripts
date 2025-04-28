@@ -146,21 +146,33 @@ pip install -q jupyter-client zmq
 echo "Installing dotnet-interactive with a stable version..."
 export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
 
-# Use .NET 8 for stability and try a stable version of dotnet-interactive
-dotnet tool install -g --add-source "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json" Microsoft.dotnet-interactive --version 1.0.430901 || {
-    echo "Failed to install from Azure feed, trying NuGet..."
-    dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.430901 || {
-        echo "Failed with specific version, trying latest stable version..."
-        dotnet tool install -g Microsoft.dotnet-interactive
+# Step 8: Install dotnet-interactive with a compatible version
+echo "Installing dotnet-interactive with a compatible version..."
+export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
+
+# First, let's determine which .NET version is most stable
+if dotnet --list-sdks | grep -q "8.0"; then
+    echo "Using .NET 8 for dotnet-interactive installation..."
+    # Try installing a version known to work with .NET 8
+    dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.615604 || {
+        echo "Trying alternative version..."
+        dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.530202 || {
+            echo "Trying older version..."
+            dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.468001
+        }
     }
-}
+elif dotnet --list-sdks | grep -q "6.0"; then
+    echo "Using .NET 6 for dotnet-interactive installation..."
+    # .NET 6 often works better with these versions
+    dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.421302
+fi
 
 # Register the interactive kernels if installation was successful
 if command -v dotnet-interactive > /dev/null 2>&1; then
     echo "dotnet-interactive installed successfully, registering kernels..."
     dotnet interactive jupyter install
 else
-    echo "dotnet-interactive installation failed, using direct kernels..."
+    echo "Using direct kernels as fallback method..."
 fi
 
 # Step 10: Verify if the installation was successful
