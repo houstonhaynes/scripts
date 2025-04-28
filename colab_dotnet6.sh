@@ -1,103 +1,117 @@
 #!/usr/bin/env bash
-# Comprehensive .NET 6 installation script for Google Colab
-# Fixes libhostfxr.so and kernel directory issues
+# Comprehensive .NET 6 installation for Google Colab
 
-echo "Installing .NET 6 SDK and interactive tools..."
+echo "Setting up .NET 6 SDK and interactive tools for Google Colab..."
 
-# Get Ubuntu version
-source /etc/os-release
-echo "Running on Ubuntu version: $VERSION_ID"
+# Install .NET packages (assuming they're already installed)
+# Check where dotnet components are actually installed
+echo "Finding .NET installation locations..."
+find / -name dotnet -type f 2>/dev/null
 
-# Download and install Microsoft repository
-wget -q https://packages.microsoft.com/config/ubuntu/$VERSION_ID/packages-microsoft-prod.deb
-dpkg -i packages-microsoft-prod.deb
-rm packages-microsoft-prod.deb
-
-# Update and install .NET SDK (with error handling)
-apt-get update
-apt-get install -y apt-transport-https
-apt-get update
-apt-get install -y dotnet-sdk-6.0
-
-# Verify installation and get actual version
-echo "Verifying .NET installation..."
-DOTNET_ROOT=$(dirname $(dirname $(which dotnet)))
-echo "DOTNET_ROOT: $DOTNET_ROOT"
-
-# Find the actual FXR version
-if [ -d "$DOTNET_ROOT/host/fxr" ]; then
-  FXR_VERSION=$(find $DOTNET_ROOT/host/fxr -maxdepth 1 -type d | grep -o "[0-9]\+\.[0-9]\+\.[0-9]\+" | sort -V | tail -n 1)
-  echo "Found .NET runtime version: $FXR_VERSION"
+# Check for existing installations
+if dpkg -l | grep -q dotnet-sdk-6.0; then
+  echo ".NET SDK 6.0 is already installed"
 else
-  echo "Warning: Could not find fxr directory in $DOTNET_ROOT/host/"
-  # Install explicit components if not found
-  apt-get install -y dotnet-runtime-6.0 dotnet-hostfxr-6.0 aspnetcore-runtime-6.0
-  FXR_VERSION=$(find /usr/lib/dotnet/host/fxr -maxdepth 1 -type d 2>/dev/null | grep -o "[0-9]\+\.[0-9]\+\.[0-9]\+" | sort -V | tail -n 1)
-  echo "Installed and found runtime version: $FXR_VERSION"
+  echo "Installing .NET SDK 6.0..."
+  # Get Ubuntu version
+  source /etc/os-release
+  
+  # Download and install Microsoft repository
+  wget -q https://packages.microsoft.com/config/ubuntu/$VERSION_ID/packages-microsoft-prod.deb
+  dpkg -i packages-microsoft-prod.deb
+  rm packages-microsoft-prod.deb
+  
+  # Install .NET SDK
+  apt-get update
+  apt-get install -y apt-transport-https
+  apt-get update
+  apt-get install -y dotnet-sdk-6.0
 fi
 
-# Create required directory structure
-echo "Setting up directory structure..."
-mkdir -p /usr/share/dotnet/host/fxr
+# Determine actual install location
+POSSIBLE_LOCATIONS=(
+  "/usr/lib/dotnet"
+  "/usr/share/dotnet"
+  "/opt/dotnet"
+)
 
-# If we found the version, create the symlinks
-if [ -n "$FXR_VERSION" ]; then
-  echo "Creating symlinks for version $FXR_VERSION"
-  # Remove existing symlinks if they exist to avoid errors
-  if [ -L "/usr/share/dotnet/dotnet" ]; then
-    rm /usr/share/dotnet/dotnet
+DOTNET_PATH=""
+for loc in "${POSSIBLE_LOCATIONS[@]}"; do
+  if [ -f "$loc/dotnet" ]; then
+    DOTNET_PATH="$loc"
+    break
   fi
-  if [ -L "/usr/share/dotnet/host/fxr/$FXR_VERSION" ]; then
-    rm /usr/share/dotnet/host/fxr/$FXR_VERSION
-  fi
-  
-  # Create proper symlinks
-  ln -sf $DOTNET_ROOT/dotnet /usr/share/dotnet/dotnet
-  ln -sf $DOTNET_ROOT/host/fxr/$FXR_VERSION /usr/share/dotnet/host/fxr/$FXR_VERSION
-  
-  # Also create the specific version directory that's being looked for
-  if [ "$FXR_VERSION" != "6.0.136" ]; then
-    mkdir -p /usr/share/dotnet/host/fxr/6.0.136
-    ln -sf $DOTNET_ROOT/host/fxr/$FXR_VERSION/* /usr/share/dotnet/host/fxr/6.0.136/
-  fi
-else
-  echo "Error: Could not determine .NET runtime version"
+done
+
+if [ -z "$DOTNET_PATH" ]; then
+  echo "Can't find dotnet executable. Searching for it..."
+  DOTNET_PATH=$(dirname $(find / -name dotnet -type f 2>/dev/null | head -1))
+  echo "Found dotnet at: $DOTNET_PATH"
+fi
+
+if [ -z "$DOTNET_PATH" ]; then
+  echo "ERROR: Could not locate dotnet installation."
   exit 1
 fi
 
+# Create symlink in a location that's in PATH
+echo "Setting up dotnet symlinks..."
+ln -sf $DOTNET_PATH/dotnet /usr/local/bin/dotnet
+export PATH=$PATH:/usr/local/bin
+
 # Set environment variables
-export DOTNET_ROOT=$DOTNET_ROOT
-export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
-echo "export DOTNET_ROOT=$DOTNET_ROOT" >> ~/.bashrc
-echo "export PATH=\$PATH:$DOTNET_ROOT:\$HOME/.dotnet/tools" >> ~/.bashrc
+echo "export DOTNET_ROOT=$DOTNET_PATH" >> ~/.bashrc
+echo "export PATH=\$PATH:/usr/local/bin:\$HOME/.dotnet/tools" >> ~/.bashrc
+export DOTNET_ROOT=$DOTNET_PATH
 
-# Install dotnet interactive
-echo "Installing .NET Interactive..."
-dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.355307
+# Check if dotnet is now available
+echo "Verifying dotnet command..."
+which dotnet || echo "dotnet command not found in PATH"
 
-# Create Jupyter kernel directories with correct names
-mkdir -p /root/.local/share/jupyter/kernels/fsharp
-mkdir -p /root/.local/share/jupyter/kernels/csharp
-
-# Create kernel configurations
-echo "Setting up Jupyter kernels..."
-echo "{\"argv\": [\"$HOME/.dotnet/tools/dotnet-interactive\", \"jupyter\", \"--default-kernel\", \"fsharp\", \"--http-port-range\", \"1000-3000\", \"{connection_file}\"], \"display_name\": \".NET (F#)\", \"language\": \"F#\"}" > /root/.local/share/jupyter/kernels/fsharp/kernel.json
-echo "{\"argv\": [\"$HOME/.dotnet/tools/dotnet-interactive\", \"jupyter\", \"--default-kernel\", \"csharp\", \"--http-port-range\", \"1000-3000\", \"{connection_file}\"], \"display_name\": \".NET (C#)\", \"language\": \"C#\"}" > /root/.local/share/jupyter/kernels/csharp/kernel.json
-
-# Try registering the kernels with Jupyter
-echo "Registering kernels with Jupyter..."
-~/.dotnet/tools/dotnet-interactive jupyter install
+# Source the path immediately
+source ~/.bashrc
 
 # Verify installation
-echo "Verifying final installation:"
-echo "dotnet version:"
-dotnet --version
-echo "dotnet --info:"
-dotnet --info
-echo "SDK versions:"
-dotnet --list-sdks
-echo "Runtime versions:"
-dotnet --list-runtimes
+if [ -x "$(command -v dotnet)" ]; then
+  echo "dotnet is now available:"
+  dotnet --version
+  
+  # Install dotnet interactive
+  echo "Installing .NET Interactive..."
+  dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.355307
+  
+  # Make sure ~/.dotnet/tools is in PATH for this session
+  export PATH=$PATH:$HOME/.dotnet/tools
+  
+  # Create Jupyter kernel directories
+  echo "Setting up Jupyter kernels..."
+  mkdir -p /root/.local/share/jupyter/kernels/fsharp
+  mkdir -p /root/.local/share/jupyter/kernels/csharp
+  
+  # Create kernel configurations
+  echo "{\"argv\": [\"/root/.dotnet/tools/dotnet-interactive\", \"jupyter\", \"--default-kernel\", \"fsharp\", \"--http-port-range\", \"1000-3000\", \"{connection_file}\"], \"display_name\": \".NET (F#)\", \"language\": \"F#\"}" > /root/.local/share/jupyter/kernels/fsharp/kernel.json
+  echo "{\"argv\": [\"/root/.dotnet/tools/dotnet-interactive\", \"jupyter\", \"--default-kernel\", \"csharp\", \"--http-port-range\", \"1000-3000\", \"{connection_file}\"], \"display_name\": \".NET (C#)\", \"language\": \"C#\"}" > /root/.local/share/jupyter/kernels/csharp/kernel.json
+  
+  # Install the kernels
+  if [ -f "/root/.dotnet/tools/dotnet-interactive" ]; then
+    /root/.dotnet/tools/dotnet-interactive jupyter install
+  else
+    echo "Warning: dotnet-interactive tool not found at expected location"
+    find / -name dotnet-interactive -type f 2>/dev/null
+  fi
+else
+  echo "ERROR: dotnet installation failed."
+  
+  # Last resort - try finding and linking the actual binary
+  DOTNET_BIN=$(find / -name dotnet -type f -executable 2>/dev/null | head -1)
+  if [ -n "$DOTNET_BIN" ]; then
+    echo "Found dotnet binary at $DOTNET_BIN"
+    ln -sf $DOTNET_BIN /usr/local/bin/dotnet
+    echo "Created symlink to /usr/local/bin/dotnet"
+    echo "Please restart your Colab session and try again."
+  fi
+fi
 
 echo "Done."
 echo "Select \"Runtime\" -> \"Change Runtime Type\" and click \"Save\" to activate for this notebook"
+echo "You may need to restart the Colab runtime for changes to take effect."
