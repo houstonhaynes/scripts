@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Complete .NET 9 installation for Google Colab with F# Kernel support
+# Complete .NET 9 installation for Google Colab
 # This script performs a fresh installation with all necessary components
 
-echo "Starting comprehensive .NET 9 installation for Google Colab with F# support..."
+echo "Starting comprehensive .NET 9 installation for Google Colab..."
 
 # Step 1: Install Microsoft package repository
 echo "Setting up Microsoft package repository..."
@@ -144,14 +144,49 @@ echo "Looking for latest compatible version of .NET Interactive..."
 dotnet tool install -g Microsoft.dotnet-interactive || {
     echo "Error installing latest .NET Interactive, trying specific version..."
     # If latest fails, try a specific version known to work with .NET 9
-    dotnet tool install -g --version 1.0.420108 Microsoft.dotnet-interactive
+    # Note: You might need to update this version as .NET 9 matures
+    dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.420108
 }
 
-# Step 8: Setup F# kernel with proxy support
-echo "Setting up F# kernel with proxy support..."
+# Step 8: Set up Jupyter kernels
+echo "Setting up Jupyter kernels..."
+# Create kernel directories
+mkdir -p /root/.local/share/jupyter/kernels/fsharp
+mkdir -p /root/.local/share/jupyter/kernels/csharp
 
-# Install jupyter kernel
-dotnet interactive jupyter install
+# Create kernel configurations
+echo "{\"argv\": [\"/root/.dotnet/tools/dotnet-interactive\", \"jupyter\", \"--default-kernel\", \"fsharp\", \"--http-port-range\", \"1000-3000\", \"{connection_file}\"], \"display_name\": \".NET 9 (F#)\", \"language\": \"F#\"}" > /root/.local/share/jupyter/kernels/fsharp/kernel.json
+echo "{\"argv\": [\"/root/.dotnet/tools/dotnet-interactive\", \"jupyter\", \"--default-kernel\", \"csharp\", \"--http-port-range\", \"1000-3000\", \"{connection_file}\"], \"display_name\": \".NET 9 (C#)\", \"language\": \"C#\"}" > /root/.local/share/jupyter/kernels/csharp/kernel.json
+
+# Register kernels with Jupyter
+if [ -f "/root/.dotnet/tools/dotnet-interactive" ]; then
+    echo "Registering kernels with dotnet-interactive..."
+    /root/.dotnet/tools/dotnet-interactive jupyter install
+else
+    echo "WARNING: dotnet-interactive not found at /root/.dotnet/tools/dotnet-interactive"
+    find / -name dotnet-interactive -type f 2>/dev/null
+fi
+
+# Final check
+echo "Final verification of directory structure:"
+echo ".NET Core App frameworks:"
+ls -la /usr/share/dotnet/shared/Microsoft.NETCore.App/ 
+echo "Host FXR directories:"
+ls -la /usr/share/dotnet/host/fxr/
+
+# Add diagnostic information if something went wrong
+if ! dotnet --list-sdks >/dev/null 2>&1; then
+    echo "===== DIAGNOSTICS ====="
+    echo "Checking library dependencies:"
+    ldd $(which dotnet) || echo "Failed to check dependencies"
+    
+    echo "Checking for missing directories:"
+    for dir in "/usr/share/dotnet" "/usr/share/dotnet/shared" "/usr/share/dotnet/host"; do
+        if [ ! -d "$dir" ]; then
+            echo "Missing directory: $dir"
+        fi
+    done
+fi
 
 # Create proxy file
 echo "Creating IPC proxy kernel file..."
@@ -352,6 +387,6 @@ rm -f ipc_proxy_kernel.py
 echo "Verifying F# kernel setup..."
 jupyter kernelspec list
 
-echo "Done! .NET 9 and F# kernel should now be ready to use."
+echo "Done! .NET 9 and .NET Interactive should now be ready to use."
 echo "Select \"Runtime\" -> \"Change Runtime Type\" and click \"Save\" to activate for this notebook"
 echo "** IMPORTANT: You MUST disconnect and reconnect to the runtime for all changes to take effect **"
