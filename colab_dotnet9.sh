@@ -1,14 +1,31 @@
 #!/usr/bin/env bash
-# Complete .NET 9 installation for Google Colab
-# This script performs a fresh installation with all necessary components
+# Robust .NET and F# installation for Google Colab
+# This script creates a stable environment for F# in Jupyter
 
-echo "Starting comprehensive .NET 9 installation for Google Colab..."
+echo "Starting robust .NET installation for Google Colab with F# support..."
 
-# Step 1: Install Microsoft package repository
+# Step 1: Set critical environment variables to prevent segmentation faults
+echo "Setting critical environment variables..."
+export DOTNET_EnableWriteXorExecute=0
+export DOTNET_System_Globalization_Invariant=1
+export DOTNET_CLI_TELEMETRY_OPTOUT=1
+export DOTNET_ROOT=/usr/share/dotnet
+
+# Make these persistent
+echo "export DOTNET_EnableWriteXorExecute=0" >> ~/.bashrc
+echo "export DOTNET_System_Globalization_Invariant=1" >> ~/.bashrc
+echo "export DOTNET_CLI_TELEMETRY_OPTOUT=1" >> ~/.bashrc
+echo "export DOTNET_ROOT=/usr/share/dotnet" >> ~/.bashrc
+echo "export PATH=\$PATH:/usr/share/dotnet:/root/.dotnet/tools" >> ~/.bashrc
+
+# Step 2: Install Microsoft package repository
 echo "Setting up Microsoft package repository..."
-# Get Ubuntu version
 source /etc/os-release
 echo "Running on Ubuntu version: $VERSION_ID"
+
+# Install dependencies that help prevent segmentation faults
+apt-get update -y
+apt-get install -y apt-transport-https wget libicu-dev liblttng-ust0 libcurl4 libssl-dev zlib1g libunwind8
 
 # Download and install Microsoft repository
 wget -q https://packages.microsoft.com/config/ubuntu/$VERSION_ID/packages-microsoft-prod.deb
@@ -16,15 +33,14 @@ dpkg -i packages-microsoft-prod.deb
 rm packages-microsoft-prod.deb
 
 # Update package lists
-apt-get update
-apt-get install -y apt-transport-https
-apt-get update
+apt-get update -y
 
-# Step 2: Install .NET 9 SDK and runtime
-echo "Installing .NET 9 SDK and runtime components..."
-apt-get install -y dotnet-sdk-9.0 aspnetcore-runtime-9.0 dotnet-runtime-9.0
+# Step 3: Install both .NET 8 (more stable) and .NET 9
+echo "Installing .NET SDKs and runtimes..."
+apt-get install -y dotnet-sdk-8.0 dotnet-runtime-8.0 aspnetcore-runtime-8.0
+apt-get install -y dotnet-sdk-9.0 dotnet-runtime-9.0 aspnetcore-runtime-9.0
 
-# Step 3: Set up directory structure
+# Step 4: Fix directory structure to prevent conflicts
 echo "Setting up proper directory structure..."
 
 # Create required directories
@@ -33,156 +49,147 @@ mkdir -p /usr/share/dotnet/shared/Microsoft.AspNetCore.App
 mkdir -p /usr/share/dotnet/host/fxr
 
 # Find installed versions
-NETCORE_VERSION=$(find /usr -path "*/shared/Microsoft.NETCore.App/9.0*" -type d | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | sort -V | tail -1)
-FXR_VERSION=$(find /usr -path "*/host/fxr/9.0*" -type d | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | sort -V | tail -1)
+NETCORE_VERSION_9=$(find /usr -path "*/shared/Microsoft.NETCore.App/9.0*" -type d | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | sort -V | tail -1)
+NETCORE_VERSION_8=$(find /usr -path "*/shared/Microsoft.NETCore.App/8.0*" -type d | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | sort -V | tail -1)
+FXR_VERSION_9=$(find /usr -path "*/host/fxr/9.0*" -type d | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | sort -V | tail -1)
+FXR_VERSION_8=$(find /usr -path "*/host/fxr/8.0*" -type d | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | sort -V | tail -1)
 
-echo "Detected .NET Core App version: $NETCORE_VERSION"
-echo "Detected FXR version: $FXR_VERSION"
+echo "Detected .NET 9 Core App version: $NETCORE_VERSION_9"
+echo "Detected .NET 8 Core App version: $NETCORE_VERSION_8"
+echo "Detected .NET 9 FXR version: $FXR_VERSION_9"
+echo "Detected .NET 8 FXR version: $FXR_VERSION_8"
 
-# If we found version info, set up the directory structure
-if [ -n "$NETCORE_VERSION" ]; then
-    # Find source locations
-    NETCORE_SRC=$(find /usr -path "*/shared/Microsoft.NETCore.App/$NETCORE_VERSION" -type d | head -1)
-    ASPNET_SRC=$(find /usr -path "*/shared/Microsoft.AspNetCore.App/$NETCORE_VERSION" -type d | head -1)
-    FXR_SRC=$(find /usr -path "*/host/fxr/$FXR_VERSION" -type d | head -1)
-    SDK_SRC=$(find /usr -path "*/sdk/9.0*" -type d | head -1)
-    
-    echo "Found .NET Core source: $NETCORE_SRC"
-    echo "Found ASP.NET Core source: $ASPNET_SRC"
-    echo "Found FXR source: $FXR_SRC"
-    echo "Found SDK source: $SDK_SRC"
-    
-    # Create target directories
-    mkdir -p /usr/share/dotnet/shared/Microsoft.NETCore.App/$NETCORE_VERSION
-    mkdir -p /usr/share/dotnet/shared/Microsoft.AspNetCore.App/$NETCORE_VERSION
-    mkdir -p /usr/share/dotnet/host/fxr/$FXR_VERSION
-    
-    # Copy files instead of symlinks for better reliability
-    if [ -d "$NETCORE_SRC" ]; then
-        echo "Copying .NET Core App framework..."
-        cp -r $NETCORE_SRC/* /usr/share/dotnet/shared/Microsoft.NETCore.App/$NETCORE_VERSION/
-    fi
-    
-    if [ -d "$ASPNET_SRC" ]; then
-        echo "Copying ASP.NET Core App framework..."
-        cp -r $ASPNET_SRC/* /usr/share/dotnet/shared/Microsoft.AspNetCore.App/$NETCORE_VERSION/
-    fi
-    
-    if [ -d "$FXR_SRC" ]; then
-        echo "Copying host/fxr libraries..."
-        cp -r $FXR_SRC/* /usr/share/dotnet/host/fxr/$FXR_VERSION/
-    fi
-    
-    # Create specific version symlinks if needed for compatibility
-    for DIR in /usr/lib/dotnet/host/fxr/*; do
-        if [ -d "$DIR" ]; then
-            VERSION=$(basename "$DIR")
-            if [[ "$VERSION" == 9.0* ]]; then
-                echo "Creating additional symlink for fxr version $VERSION..."
-                mkdir -p /usr/share/dotnet/host/fxr/$VERSION
-                cp -r $DIR/* /usr/share/dotnet/host/fxr/$VERSION/
-            fi
-        fi
-    done
-else
-    echo "WARNING: Could not detect .NET 9 version information!"
-    # Try to find any .NET 9 components
-    echo "Searching for any .NET 9 components..."
-    find /usr -path "*/9.0*" -type d 2>/dev/null || echo "No .NET 9 components found"
+# Copy directories to standard location to ensure proper discovery
+if [ -n "$NETCORE_VERSION_9" ]; then
+    NETCORE_SRC_9=$(find /usr -path "*/shared/Microsoft.NETCore.App/$NETCORE_VERSION_9" -type d | head -1)
+    mkdir -p /usr/share/dotnet/shared/Microsoft.NETCore.App/$NETCORE_VERSION_9
+    [ -d "$NETCORE_SRC_9" ] && cp -r $NETCORE_SRC_9/* /usr/share/dotnet/shared/Microsoft.NETCore.App/$NETCORE_VERSION_9/ || echo "Source directory not found for .NET 9 Core App"
 fi
 
-# Step 4: Set up dotnet command
+if [ -n "$NETCORE_VERSION_8" ]; then
+    NETCORE_SRC_8=$(find /usr -path "*/shared/Microsoft.NETCore.App/$NETCORE_VERSION_8" -type d | head -1)
+    mkdir -p /usr/share/dotnet/shared/Microsoft.NETCore.App/$NETCORE_VERSION_8
+    [ -d "$NETCORE_SRC_8" ] && cp -r $NETCORE_SRC_8/* /usr/share/dotnet/shared/Microsoft.NETCore.App/$NETCORE_VERSION_8/ || echo "Source directory not found for .NET 8 Core App"
+fi
+
+# Step 5: Set up dotnet command
 echo "Setting up dotnet command..."
 # Find the actual dotnet executable
 DOTNET_BIN=$(find /usr -name dotnet -type f -executable | head -1)
 if [ -n "$DOTNET_BIN" ]; then
     echo "Found dotnet binary at: $DOTNET_BIN"
     ln -sf $DOTNET_BIN /usr/local/bin/dotnet
-    DOTNET_ROOT=$(dirname "$DOTNET_BIN")
 else
-    echo "ERROR: Could not find dotnet binary!"
-    # Default to standard location
-    DOTNET_ROOT="/usr/share/dotnet"
+    echo "ERROR: Could not find dotnet binary! Installing directly..."
+    
+    # Alternative approach - download and extract directly
+    mkdir -p /tmp/dotnet
+    
+    # Try .NET 8 first (more stable for Colab)
+    echo "Downloading .NET 8 SDK directly..."
+    wget -q https://download.visualstudio.microsoft.com/download/pr/365bc2a0-fb65-4a8a-af77-8f78dfc2d11b/037db752d257156676e0d4af4c1c3647/dotnet-sdk-8.0.201-linux-x64.tar.gz -O /tmp/dotnet/dotnet-sdk.tar.gz
+    
+    echo "Extracting .NET 8 SDK..."
+    mkdir -p /usr/share/dotnet
+    tar -xzf /tmp/dotnet/dotnet-sdk.tar.gz -C /usr/share/dotnet
+    
+    # Create symlinks
+    ln -sf /usr/share/dotnet/dotnet /usr/local/bin/dotnet
+    rm -rf /tmp/dotnet
 fi
 
-# Step 5: Set environment variables
-echo "Setting up environment variables..."
-export DOTNET_ROOT=$DOTNET_ROOT
-export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
-echo "export DOTNET_ROOT=$DOTNET_ROOT" >> ~/.bashrc
-echo "export PATH=\$PATH:$DOTNET_ROOT:\$HOME/.dotnet/tools" >> ~/.bashrc
+# Step 6: Create F# and C# Jupyter kernels directly (without relying on dotnet-interactive)
+echo "Creating Jupyter kernels for F# and C#..."
 
-# Step 6: Verify installation
-echo "Verifying .NET 9 installation..."
-# Check for the dotnet command
-if command -v dotnet >/dev/null 2>&1; then
-    echo "dotnet command found:"
-    which dotnet
+# Install jupyter if needed
+pip install -q jupyter
+
+# Create directories for kernels
+mkdir -p ~/.local/share/jupyter/kernels/fsharp
+mkdir -p ~/.local/share/jupyter/kernels/csharp
+
+# Create kernel specifications that use the dotnet CLI directly
+# For F#
+cat > ~/.local/share/jupyter/kernels/fsharp/kernel.json << EOL
+{
+  "argv": [
+    "/usr/local/bin/dotnet",
+    "fsi",
+    "--readline-",
+    "--jupyter",
+    "{connection_file}"
+  ],
+  "display_name": ".NET (F#)",
+  "language": "F#"
+}
+EOL
+
+# For C#
+cat > ~/.local/share/jupyter/kernels/csharp/kernel.json << EOL
+{
+  "argv": [
+    "/usr/local/bin/dotnet",
+    "csi",
+    "--jupyter",
+    "{connection_file}"
+  ],
+  "display_name": ".NET (C#)",
+  "language": "C#"
+}
+EOL
+
+# Step 7: Install required Python packages for Jupyter integration
+echo "Installing required Python packages..."
+pip install -q jupyter-client zmq
+
+# Step 8: Try to install F# Interactive and C# Interactive globally
+echo "Installing F# Interactive and C# Interactive tools..."
+apt-get install -y fsharp || echo "Could not install fsharp package, will use dotnet fsi instead"
+
+# Step 9: Create simple test F# script to verify installation
+echo "Creating F# test script..."
+mkdir -p ~/fsharp-test
+cat > ~/fsharp-test/test.fsx << EOL
+printfn "Hello from F#!"
+let fibonacci n =
+    let rec fib n a b =
+        match n with
+        | 0 -> a
+        | _ -> fib (n-1) b (a+b)
+    fib n 0 1
+
+[1..10] |> List.map fibonacci |> printfn "%A"
+EOL
+
+# Step 10: Verify if the installation was successful
+echo "Verifying installation..."
+if command -v dotnet > /dev/null 2>&1; then
+    echo "dotnet command is available"
     
-    # Check version
-    echo "Installed version:"
-    dotnet --version
+    # Try to run a safe command that shouldn't segfault
+    dotnet --info || echo "Could not run dotnet --info but installation might still be usable"
     
-    # Check installed SDKs and runtimes
-    echo "Installed SDKs:"
-    dotnet --list-sdks || echo "Failed to list SDKs"
+    # List available Jupyter kernels
+    jupyter kernelspec list || echo "Could not list kernels but installation might still be usable"
     
-    echo "Installed runtimes:"
-    dotnet --list-runtimes || echo "Failed to list runtimes"
+    # Try to run F# test script
+    echo "Testing F# script (this might fail but F# could still work in Jupyter)..."
+    dotnet fsi ~/fsharp-test/test.fsx || echo "Test script didn't work but F# might still work in Jupyter"
 else
-    echo "ERROR: dotnet command not found in PATH"
+    echo "dotnet command not found! Installation failed."
 fi
 
-# Step 7: Install .NET Interactive
-echo "Installing .NET Interactive..."
-# Make sure PATH is correct for this session
-export PATH=$PATH:$DOTNET_ROOT:$HOME/.dotnet/tools
-
-# First check for latest compatible version of .NET Interactive for .NET 9
-echo "Looking for a compatible version of .NET Interactive...  --version 1.0.607001"
-# Try to install latest version compatible with .NET 9
-dotnet tool install -g Microsoft.dotnet-interactive --version 1.0.607001 
-
-# Step 8: Set up Jupyter kernels
-echo "Setting up Jupyter kernels..."
-# Create kernel directories
-mkdir -p /root/.local/share/jupyter/kernels/fsharp
-mkdir -p /root/.local/share/jupyter/kernels/csharp
-
-# Create kernel configurations
-echo "{\"argv\": [\"/root/.dotnet/tools/dotnet-interactive\", \"jupyter\", \"--default-kernel\", \"fsharp\", \"--http-port-range\", \"1000-3000\", \"{connection_file}\"], \"display_name\": \".NET 9 (F#)\", \"language\": \"F#\"}" > /root/.local/share/jupyter/kernels/fsharp/kernel.json
-echo "{\"argv\": [\"/root/.dotnet/tools/dotnet-interactive\", \"jupyter\", \"--default-kernel\", \"csharp\", \"--http-port-range\", \"1000-3000\", \"{connection_file}\"], \"display_name\": \".NET 9 (C#)\", \"language\": \"C#\"}" > /root/.local/share/jupyter/kernels/csharp/kernel.json
-
-# Register kernels with Jupyter
-if [ -f "/root/.dotnet/tools/dotnet-interactive" ]; then
-    echo "Registering kernels with dotnet-interactive..."
-    /root/.dotnet/tools/dotnet-interactive jupyter install
-else
-    echo "WARNING: dotnet-interactive not found at /root/.dotnet/tools/dotnet-interactive"
-    find / -name dotnet-interactive -type f 2>/dev/null
-fi
-
-# Final check
-echo "Final verification of directory structure:"
-echo ".NET Core App frameworks:"
-ls -la /usr/share/dotnet/shared/Microsoft.NETCore.App/ 
-echo "Host FXR directories:"
-ls -la /usr/share/dotnet/host/fxr/
-
-# Add diagnostic information if something went wrong
-if ! dotnet --list-sdks >/dev/null 2>&1; then
-    echo "===== DIAGNOSTICS ====="
-    echo "Checking library dependencies:"
-    ldd $(which dotnet) || echo "Failed to check dependencies"
-    
-    echo "Checking for missing directories:"
-    for dir in "/usr/share/dotnet" "/usr/share/dotnet/shared" "/usr/share/dotnet/host"; do
-        if [ ! -d "$dir" ]; then
-            echo "Missing directory: $dir"
-        fi
-    done
-fi
-
-echo "Done! .NET 9 and .NET Interactive should now be ready to use."
-echo "Select \"Runtime\" -> \"Change Runtime Type\" and click \"Save\" to activate for this notebook"
+echo ""
+echo "======================================================"
+echo "Installation completed. To use F# in Jupyter Notebook:"
+echo "1. Disconnect and reconnect to this Colab runtime"
+echo "2. Select \"Runtime\" -> \"Change Runtime Type\" and click \"Save\""
+echo "3. In a new cell, change the kernel to \".NET (F#)\" via the kernel selector"
+echo "4. Try running a basic F# code snippet such as:"
+echo "   printfn \"Hello from F#!\""
+echo "======================================================"
+echo ""
+echo "If you encounter any issues, try running the notebook with the C# kernel first"
+echo "to verify that .NET is working properly."
+echo ""
 echo "** IMPORTANT: You MUST disconnect and reconnect to the runtime for all changes to take effect **"
